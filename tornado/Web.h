@@ -54,7 +54,7 @@ public:
         send_error(405);
     }
 
-    //¿ËÂ¡×Ô¼ºµÄÒ»¸ö¶ÔÏó just new MYSelf
+    //å…‹éš†è‡ªå·±çš„ä¸€ä¸ªå¯¹è±¡ just new MYSelf
     virtual RequestHandler* clone() = 0;
 
     void write(const std::string& chunk);
@@ -106,7 +106,7 @@ public:
     }
 };
 
-//ÔİÊ±²»Ö§³ÖÕıÔò±í´ïÊ½
+//æš‚æ—¶ä¸æ”¯æŒæ­£åˆ™è¡¨è¾¾å¼
 class Application
 {
 public:

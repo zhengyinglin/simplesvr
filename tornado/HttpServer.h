@@ -131,7 +131,7 @@ public:
     {}
 
 protected:
-    //Ğéº¯Êı--×ÓÀàÖØÔØ
+    //è™šå‡½æ•°--å­ç±»é‡è½½
     virtual void handleStream(IOStreamPtr& stream);
 private:
     HttpRequestCallback  callback_;

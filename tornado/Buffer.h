@@ -39,7 +39,7 @@ public:
         return buff_ + read_index_;
     }
 
-    //¸Ãº¯Êý   data()  »áÊ§Ð§
+    //è¯¥å‡½æ•°   data()  ä¼šå¤±æ•ˆ
     bool ensureWritableBytes(size_t len);  
     bool extendReadBytes(size_t  add_bytes);
 
@@ -66,7 +66,7 @@ public:
 
     bool readBytes(size_t len);
 
-    //·µ»ØÆäÏÂ±ê£¬ <0 Ã»ÓÐÕÒµ½
+    //è¿”å›žå…¶ä¸‹æ ‡ï¼Œ <0 æ²¡æœ‰æ‰¾åˆ°
     int find(const std::string& delimiter);
 
 private: 

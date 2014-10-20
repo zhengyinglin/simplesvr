@@ -146,14 +146,14 @@ int IOLoop::start()
              timeouts_.runOnce( TimeUtil::curTimeMS() ); // noly can run one
          }
 
-         //Íâ²¿ÖÕÖ¹Ñ­»·
+         //å¤–éƒ¨ç»ˆæ­¢å¾ªç¯
          if(false == running_)
          {
              LOG_WARN("running_ false exit loop")
              break;
          }
          
-         //Ã»ÓĞ´¦ÀíÇëÇóÍË³öÑ­»·
+         //æ²¡æœ‰å¤„ç†è¯·æ±‚é€€å‡ºå¾ªç¯
          if( handle_num_ <= 0 && callbacks_.empty() && timeouts_.empty() )
          {
              LOG_WARN("nothing to process exit loop")

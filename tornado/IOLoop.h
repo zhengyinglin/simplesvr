@@ -19,7 +19,7 @@ class IOLoop
 {
 public:
     static const int   DEFAULT_MAX_FD = 10000 + 4;
-    static const int   MIN_FD = 3; // ÅÅ³ýµô±ê×¼ÎÄ¼þÃèÊö·û0 1 2
+    static const int   MIN_FD = 3; // æŽ’é™¤æŽ‰æ ‡å‡†æ–‡ä»¶æè¿°ç¬¦0 1 2
     static const uint32_t  READ  = EPOLLIN;
     static const uint32_t  WRITE = EPOLLOUT;
     static const uint32_t  ERROR = EPOLLERR | EPOLLHUP;
@@ -74,8 +74,8 @@ public:
       
 private:
     EPollImpl   impl_;
-    int         handle_num_; //µ±Ç°×¢²áfd ÊýÁ¿
-    //ÎÄ¼þÃèÊö·ûµÝÔöÌØÐÔ£¬ÓÃÊý×é¶ø²»ÊÇmap
+    int         handle_num_; //å½“å‰æ³¨å†Œfd æ•°é‡
+    //æ–‡ä»¶æè¿°ç¬¦é€’å¢žç‰¹æ€§ï¼Œç”¨æ•°ç»„è€Œä¸æ˜¯map
     std::vector<STHander>  handlers_;
     std::vector<Callback>  callbacks_;
     folly::TimeoutQueue    timeouts_;

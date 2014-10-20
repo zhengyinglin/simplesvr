@@ -93,7 +93,7 @@ bool Buffer::readBytes(size_t len)
     return true;
 }
 
-//返回其下标， <0 没有找到
+//杩斿洖鍏朵笅鏍囷紝 <0 娌℃湁鎵惧埌
 int Buffer::find(const std::string& delimiter)
 {
     const char* pos = std::search(begin(), end(), delimiter.begin(), delimiter.end());

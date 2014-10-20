@@ -44,7 +44,7 @@ public:
         //set close callback
         stream_->setCloseCallback(boost::bind(&TcpClient::onStreamClose, shared_from_this()) );
 
-        //1Ãë³¬Ê±
+        //1ç§’è¶…æ—¶
         request_timer_ = io_loop_->addTimeout(timeoutMS, boost::bind(&TcpClient::onConnectTimeout, shared_from_this(), _1, _2));
 
         return stream_->connect(ip, port, boost::bind(&TcpClient::connectDone, shared_from_this(), _1) );
@@ -125,8 +125,8 @@ private:
     IOLoop*          io_loop_;
     IOLoop::TimerID  request_timer_;
     IOStreamPtr      stream_;
-    int              loopnum_; // ²âÊÔÑ­»·´ÎÊı
-    int              curnum_; // ³É¹¦´ÎÊı
+    int              loopnum_; // æµ‹è¯•å¾ªç¯æ¬¡æ•°
+    int              curnum_; // æˆåŠŸæ¬¡æ•°
     /*IOStream::ReadCallback  callback_;*/
 };
 

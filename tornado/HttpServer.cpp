@@ -11,7 +11,7 @@ namespace tornado
 static std::string CRLF("\r\n");
 int HTTPHeaders::parse(const std::string& headers, size_t pos)
 {
-    //http Ò»¶¨ÓĞÒÔ \r\n ½áÊøĞĞµÄ
+    //http ä¸€å®šæœ‰ä»¥ \r\n ç»“æŸè¡Œçš„
     while(pos < headers.size())
     {
         size_t  index = headers.find(CRLF, pos);
@@ -47,7 +47,7 @@ int HTTPHeaders::parseLine(const char* line, size_t len)
     //len > 0
     const char* end = line + len;
 
-    //Èç¹ûÓĞ2¸öÒ»ÑùµÄºóÃæÄÇ¸ö¸²¸ÇÇ°ÃæÄÇ¸ö
+    //å¦‚æœæœ‰2ä¸ªä¸€æ ·çš„åé¢é‚£ä¸ªè¦†ç›–å‰é¢é‚£ä¸ª
     if(line[0] == ' ')//isspace # continuation of a multi-line header
     {
         printf("continuation of a multi-line header\n");
@@ -390,9 +390,9 @@ void HTTPServer::handleStream(IOStreamPtr& stream)
 {
     const int32_t fd = stream->getFd();
     LOG_DEBUG("fd=%d", fd);
-    //´Ë´¦»ùÓÚIOStreamPtr  Óë HTTPConnectionPtr µÄÑ­»·ÒıÓÃ À´±£Ö¤ 2¸ö¶ÔÏó´¦Àí¹ı³ÌÖĞ²»±»ÊÍ·Å
-    //¶Ï¿ªÑ­»·ÒıÓÃ»ùÓÚIOStream::close£¨×ªÒÆµ½IOLoop£©, ÊÍ·Å¶ÔHTTPConnectionµÄÒıÓÃ£¬
-    //HTTPConnection ¶ÔÏóÎö¹¹  ¡¢IOStream¶ÔÏóÎö¹¹
+    //æ­¤å¤„åŸºäºIOStreamPtr  ä¸ HTTPConnectionPtr çš„å¾ªç¯å¼•ç”¨ æ¥ä¿è¯ 2ä¸ªå¯¹è±¡å¤„ç†è¿‡ç¨‹ä¸­ä¸è¢«é‡Šæ”¾
+    //æ–­å¼€å¾ªç¯å¼•ç”¨åŸºäºIOStream::closeï¼ˆè½¬ç§»åˆ°IOLoopï¼‰, é‡Šæ”¾å¯¹HTTPConnectionçš„å¼•ç”¨ï¼Œ
+    //HTTPConnection å¯¹è±¡ææ„  ã€IOStreamå¯¹è±¡ææ„
     HTTPConnectionPtr ptr(new HTTPConnection(stream, callback_));
     ptr->startRun();
 }

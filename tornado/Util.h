@@ -48,7 +48,7 @@ public:
         return  (int64_t)t_start.tv_sec * 1000 + t_start.tv_usec / 1000; 
     }
 
-    //²»ÊÇÏß³Ì°²È«µÄ
+    //ä¸æ˜¯çº¿ç¨‹å®‰å…¨çš„
     static char*  getGMTTimestamp()
     {
         time_t  now = time(NULL);

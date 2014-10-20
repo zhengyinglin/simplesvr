@@ -83,7 +83,7 @@ bool IOStream::connect(const char* ip, short port)
     memset(&addr, 0x0, sizeof(addr));
     addr.sin_family=AF_INET;
     addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(ip); //inet_addr转换为网络字节序
+    addr.sin_addr.s_addr = inet_addr(ip); //inet_addr杞崲涓虹綉缁滃瓧鑺傚簭
 
     int ret = ::connect(socket_,  (struct sockaddr*)&addr, sizeof(struct sockaddr) );
     if(ret != 0 )
@@ -182,7 +182,7 @@ int IOStream::readBytes(int num_bytes, ReadCallback callback)
     if(num_bytes <= 0 )
         return -1;
 
-    //本地缓存有数据，直接返回
+    //鏈湴缂撳瓨鏈夋暟鎹紝鐩存帴杩斿洖
     if (read_buffer_.readableBytes() >= (unsigned)num_bytes )
     {
         StringPtr result(new std::string);
@@ -225,7 +225,7 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
     assert(read_callback_.empty());
     assert(read_delimiter_.empty() && read_bytes_ == 0 );
 
-    //本地缓存有数据，直接返回
+    //鏈湴缂撳瓨鏈夋暟鎹紝鐩存帴杩斿洖
     int index = read_buffer_.find(delimiter);
     if ( index >= 0 )
     {

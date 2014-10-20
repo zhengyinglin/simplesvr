@@ -28,7 +28,7 @@ public:
 protected:
     void handleConnection(int32_t socket, uint32_t events);
 
-    //Ğéº¯Êı--×ÓÀàÖØÔØ
+    //è™šå‡½æ•°--å­ç±»é‡è½½
     virtual void handleStream(IOStreamPtr& stream) = 0;
 
 protected:

@@ -58,7 +58,7 @@ public:
         //set close callback
         stream_->setCloseCallback(boost::bind(&MyTCP::onStreamClose, shared_from_this()) );
 
-        //1�볬ʱ
+        //1秒超时
         request_timer_ = io_loop_->addTimeout(timeoutMS, boost::bind(&MyTCP::onConnectTimeout, shared_from_this(), _1, _2));
 
         return stream_->connect(ip, port, boost::bind(&MyTCP::connectDone, shared_from_this(), _1) );
