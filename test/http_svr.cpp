@@ -11,6 +11,7 @@
 #include <signal.h>
 
 
+
 void handler(tornado::HTTPConnectionPtr conn)
 {
     const tornado::HTTPRequest& request = conn->getRequset();
@@ -57,7 +58,7 @@ void handler(tornado::HTTPConnectionPtr conn)
 void signal_handler(int32_t fd, uint32_t events)
 {
     tornado::IOLoop::instance()->removeHandler(fd);
-    LOG_WARN('Caught signal : will stop server fd=%d', fd);
+    LOG_WARN("Caught signal : will stop server fd=%d", fd);
     tornado::IOLoop::instance()->stop();
 }
 
@@ -65,15 +66,21 @@ void signal_handler_2(tornado::HTTPServer* svr, int32_t fd, uint32_t events)
 {
     //must be remove 
     tornado::IOLoop::instance()->removeHandler(fd);
-    LOG_WARN('Caught signal : will stop server signal fd=%d', fd);
+    LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
     svr->stop();
 }
 
 
-int main(int argc, char** args)
+#include "gflags/gflags.h"
+DEFINE_int32(port, 8888, "--port=8888  listen port");
+
+int main(int argc, char** argv)
 {
-    tornado::set_log_level(argc, args);
- 
+    bool ret = tornado::init_log(argc, argv);//have ParseCommandLineFlags
+    if(!ret)
+    {
+        perror("init_log faid");
+    }
     tornado::HTTPServer svr( &handler );
 
     int32_t sfd = tornado::IOLoop::instance()->addSignalHandler(SIGTERM, 
@@ -88,7 +95,7 @@ int main(int argc, char** args)
     }
     LOG_INFO("addSignalHandler fd=%d", sfd);
 
-    if( svr.listen("", 8080) )//10.12.16.139
+    if( svr.listen("", FLAGS_port) )//
         return -1;
     svr.start();
     return 0;

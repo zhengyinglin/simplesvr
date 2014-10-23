@@ -208,21 +208,21 @@ protected:
 };
 
 
-class StringShmSet :  public ShmSet<shm_string>
-{
-public:
-    StringShmSet(const char* pMemName, size_t  alloc_size = 0):
-        ShmSet<shm_string>(pMemName, alloc_size)
-    {
-    }
-
-    void insert(const char* buff, size_t size)
-    { 
-        CharAllocator charAloc(ShmSet<shm_string>::m_pSegment->get_segment_manager());
-        shm_string  val(buff, size, charAloc);
-        ShmSet<shm_string>::m_pSet->insert(val);
-    }
-};
+//class StringShmSet :  public ShmSet<shm_string>
+//{
+//public:
+//    StringShmSet(const char* pMemName, size_t  alloc_size = 0):
+//        ShmSet<shm_string>(pMemName, alloc_size)
+//    {
+//    }
+//
+//    void insert(const char* buff, size_t size)
+//    { 
+//        CharAllocator charAloc(ShmSet<shm_string>::m_pSegment->get_segment_manager());
+//        shm_string  new_val(buff, size, charAloc);
+//        ShmSet<shm_string>::m_pSet->insert(new_val);
+//    }
+//};
 
 
 
@@ -324,7 +324,7 @@ public:
         { 
             CharAllocator charAloc(ShmMap<KeyType, shm_string>::m_pSegment->get_segment_manager());
             shm_string  new_val(buff, size, charAloc);
-            ShmMap<KeyType, shm_string>::m_pMap->insert(std::pair<const KeyType, shm_string>(key, new_val));
+            ShmMap<KeyType, shm_string>::m_pMap->insert(std::make_pair<const KeyType, shm_string>(key, new_val));
         }
         else
         {
@@ -333,6 +333,82 @@ public:
     }
 
 };
+
+
+
+template<typename KeyType, typename MappedType>
+class ShmMultiMap
+{
+public:
+    typedef std::pair<const KeyType, MappedType> ValueType;
+    typedef boost::interprocess::allocator<ValueType, ManagedSharedMemory::segment_manager> ShmemAllocator;
+    typedef boost::interprocess::multimap<KeyType, MappedType, std::less<KeyType>, ShmemAllocator> MultiMap;
+
+    ShmMultiMap(const char* pMemName, size_t  alloc_size = 0)
+    {
+        bool bNewCreate = false;
+        m_pSegment = NULL;
+        try
+        {
+            m_pSegment = new ManagedSharedMemory(boost::interprocess::open_only, pMemName);  
+        }
+        catch (const std::exception& e )
+        {
+            assert(alloc_size > 0);
+            m_pSegment = new ManagedSharedMemory(boost::interprocess::create_only, pMemName, alloc_size);
+            bNewCreate = true;
+        }
+
+        if(bNewCreate)
+        {
+            const ShmemAllocator alloc_inst(m_pSegment->get_segment_manager());
+            m_pMultiMap = m_pSegment->construct<MultiMap>("MultiMap")(std::less<KeyType>(), alloc_inst);
+        }
+        else
+        {
+             m_pMultiMap = m_pSegment->find<MultiMap>("MultiMap").first;
+        }
+        assert(m_pMultiMap != NULL) ;
+        //check size
+        assert( alloc_size &&  m_pSegment->get_size() == alloc_size );
+    }
+
+    virtual ~ShmMultiMap()
+    {
+        //should not delete m_pMap;
+        delete m_pSegment;
+    }
+    
+    inline void insert(const KeyType key, MappedType val)
+    {
+         m_pMultiMap->insert( std::make_pair<const KeyType, MappedType>(key, val) );
+    }
+
+    inline size_t erase(const KeyType& key)
+    {
+       return m_pMultiMap->erase(key);
+    }
+
+    inline MultiMap* get_map()
+    {
+        return m_pMultiMap;
+    }
+
+    inline ManagedSharedMemory* get_segment()
+    {
+        return m_pSegment;
+    }
+
+    void destroy()
+    {
+        m_pSegment->destroy<MultiMap>("MultiMap");  
+    }
+
+protected:
+    ManagedSharedMemory* m_pSegment;
+    MultiMap *m_pMultiMap;
+};
+
 
 } // namespace  boostshm
 

@@ -23,7 +23,7 @@ int IOLoop::addHandler(int32_t fd, HandlerCallback handler, uint32_t events)
 {  
     if( fd < MIN_FD || fd >= (int)handlers_.size() )
     {
-        LOG_ERROR("invalid fd fd=%d  maxfd=%d", fd, (int)handlers_.size())  
+        LOG_ERROR("invalid fd=%d maxfd=%zu", fd, handlers_.size());  
         return -1;
     }
 
@@ -37,7 +37,7 @@ int IOLoop::addHandler(int32_t fd, HandlerCallback handler, uint32_t events)
     int result = impl_.registerFD(fd, events | ERROR );
     if(result)
     {
-        LOG_ERROR("fd=%d, events=0X%0x registerFD failed resul=%d", fd, events, result)  
+        LOG_ERROR("fd=%d, events=%0x0x registerFD failed result=%d", fd, events, result);  
     }
     return result;
 }
@@ -47,14 +47,14 @@ int IOLoop::updateHandler(int32_t fd, uint32_t events)
 {
     if( fd < MIN_FD || fd >= (int)handlers_.size() )
     {
-        LOG_ERROR("invalid fd fd=%d  maxfd=%d", fd, (int)handlers_.size())  
+        LOG_ERROR("invalid fd=%d maxfd=%zu", fd, handlers_.size());  
         return -1;
     }
 
     int result = impl_.modifyFD(fd, events | ERROR );
     if(result)
     {
-        LOG_ERROR("fd=%d, events=0X%0x modifyFD failed resul=%d", fd, events, result)  
+        LOG_ERROR("fd=%d, events=%0x0x modifyFD failed result=%d", fd, events, result);  
     }
     return result;
 }
@@ -64,13 +64,13 @@ int IOLoop::removeHandler(int32_t fd)
 {
     if( fd < MIN_FD || fd >= (int)handlers_.size() )
     {
-        LOG_ERROR("invalid fd fd=%d  maxfd=%d", fd, (int)handlers_.size())  
+        LOG_ERROR("invalid fd=%d maxfd=%zu", fd, handlers_.size());  
         return -1;
     }
 
     if( handlers_[fd].fd == -1)
     {
-        LOG_ERROR("invalid fd=%d  ..do nothing", fd)  
+        LOG_ERROR("invalid fd=%d  ..do nothing", fd); 
         return 0;
     }
     --handle_num_;
@@ -80,7 +80,7 @@ int IOLoop::removeHandler(int32_t fd)
     int result = impl_.unregisterFD(fd);
     if(result)
     {
-        LOG_ERROR("fd=%d, unregisterFD failed resul=%d", fd, result)  
+        LOG_ERROR("fd=%d, unregisterFD failed result=%d", fd, result);  
     }    
     return result;
 }
@@ -107,7 +107,7 @@ int32_t IOLoop::addSignalHandler(int signum, HandlerCallback handler)
 
     if( addHandler(sfd, handler, IOLoop::READ) )
     {
-        LOG_ERROR("addHandler(fd=%d) failed ", sfd);  
+        LOG_ERROR("addHandler faild sfd=%d", sfd);  
         removeHandler(sfd);
         ::close(sfd);
         return -1;
@@ -119,22 +119,22 @@ int IOLoop::start()
 {
     if(running_)
     {
-        LOG_ERROR("IOLoop is already running")
+        LOG_ERROR_STR("IOLoop is already running");
         return -1;
     }
 
     //self._setup_logging()
      running_ = true;
-     int loopnum = 0;
+     uint32_t loopnum = 0;
      while(true)
      {
-         LOG_DEBUG("IOLoop iterator(%d) start", ++loopnum)
+         LOG_DEBUG("IOLoop iterator(%u) start", ++loopnum);
          if(false == callbacks_.empty())
          {
              //copy 
              std::vector<Callback>  callbacks;
              callbacks.swap( callbacks_ );
-             LOG_DEBUG("IOLoop run callbacks size = %d ", (int)callbacks.size() );
+             LOG_DEBUG("IOLoop run callbacks size = %zu", callbacks.size());
              for(auto iter = callbacks.begin(); iter != callbacks.end(); ++iter)
              {
                 (*iter)();
@@ -149,14 +149,14 @@ int IOLoop::start()
          //外部终止循环
          if(false == running_)
          {
-             LOG_WARN("running_ false exit loop")
+             LOG_WARN_STR("running_ false exit loop");
              break;
          }
          
          //没有处理请求退出循环
          if( handle_num_ <= 0 && callbacks_.empty() && timeouts_.empty() )
          {
-             LOG_WARN("nothing to process exit loop")
+             LOG_WARN_STR("nothing to process exit loop");
              break;
          }
 
@@ -173,7 +173,7 @@ int IOLoop::start()
              else
                  poll_timeout =  timeouts_.nextExpiration() - now;
          }
-         LOG_DEBUG("IOLoop poll_timeout = %d", poll_timeout)
+         LOG_DEBUG("IOLoop poll_timeout = %d", poll_timeout);
 
          struct epoll_event*  event_list = NULL;
          int numEvents = impl_.poll(poll_timeout, event_list);
@@ -190,7 +190,7 @@ int IOLoop::start()
                  }
                  else
                  {
-                     LOG_WARN("handlers_[fd %d ].cb is null", fd)
+                     LOG_WARN("handlers_[fd=%d].cb is null", fd );
                  }
              }
          }

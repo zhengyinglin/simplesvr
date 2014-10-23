@@ -64,14 +64,14 @@ bool Buffer::extendReadBytes(size_t  add_bytes)
 
 void Buffer::makeSpace()
 {
-    LOG_INFO("--makeSpace read_index_ = %d write_index_=%d", (int)read_index_, (int)write_index_)
+    LOG_INFO("--makeSpace read_index_ = %zu write_index_=%zu", read_index_, write_index_);
     assert(write_index_ >= read_index_ );
 
     size_t readable = readableBytes();
     std::copy(begin(),  end(),  buff_);
     read_index_ = 0;
     write_index_ = readable;
-    LOG_INFO("++makeSpace read_index_ = %d write_index_=%d", (int)read_index_, (int)write_index_)
+    LOG_INFO("--makeSpace read_index_ = %zu write_index_=%zu", read_index_, write_index_);
 }
 
 

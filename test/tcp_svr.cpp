@@ -19,12 +19,12 @@ public:
     TcpConnection(IOStreamPtr& stream):
         stream_(stream)
     {
-        LOG_ERROR("--------->TcpConnection create stream");
+        LOG_DEBUG_STR("--------->TcpConnection create stream");
     }
 
     virtual ~TcpConnection()
     {
-        LOG_ERROR("<-------~TcpConnection release");
+        LOG_DEBUG_STR("<-------~TcpConnection release");
     }
 
     void startRun()
@@ -48,6 +48,7 @@ public:
     {
         int fd = stream_->getFd();
         LOG_DEBUG("fd=%d|data=%s", fd, data.c_str());
+
         //std::string  buff(400, 'a');
         //int iRet = stream_->writeBytes(buff.c_str(), buff.size(), 
         int iRet = stream_->writeBytes(data.c_str(), data.size(), 
@@ -60,13 +61,13 @@ public:
       
     void OnWriterDone()
     {
-        LOG_INFO("startReading again");
+        LOG_DEBUG_STR("startReading again");
         startReading();
     }
 
     void onStreamColse()
     {
-        LOG_ERROR("");
+        LOG_DEBUG_STR("onStreamColse");
     }
 
 private:
@@ -80,7 +81,7 @@ class MySvr : public TcpServer
 protected:
     virtual void handleStream(IOStreamPtr& stream)
     {
-        LOG_INFO("handle_stream");
+        LOG_INFO_STR("handle_stream");
         TcpConnectionPtr ptr(new TcpConnection(stream));
         ptr->startRun();
     }
@@ -89,16 +90,21 @@ public:
     {
         //must be remove 
         tornado::IOLoop::instance()->removeHandler(fd);
-        LOG_WARN('Caught signal : will stop server signal fd=%d', fd);
+        LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
         stop();
     }
 };
 
 }
 
-int main(int argc, char** args)
+
+#include "gflags/gflags.h"
+DEFINE_int32(port, 8888, "--port=8888  listen port");
+
+
+int main(int argc, char* argv[])
 {
-    tornado::set_log_level(argc, args);
+    tornado::init_log(argc, argv); //have ParseCommandLineFlags
     tornado::MySvr svr;
 
     int32_t sfd = tornado::IOLoop::instance()->addSignalHandler(SIGTERM, 
@@ -106,12 +112,12 @@ int main(int argc, char** args)
         );
     if(sfd < 0)
     {
-        LOG_ERROR("addSignalHandler failed");
+        LOG_ERROR_STR("addSignalHandler failed");
         return -1;
     }
     LOG_INFO("addSignalHandler fd=%d", sfd);
 
-    if( svr.listen("", 7777) )//10.12.16.139
+    if( svr.listen("", FLAGS_port) )//10.12.16.139
         return -1;
 
     svr.start();

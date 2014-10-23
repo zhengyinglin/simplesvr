@@ -77,7 +77,7 @@ int TcpServer::listen(const std::string& host, uint16_t port)
         boost::bind(&TcpServer::handleConnection, this, _1, _2),
         IOLoop::READ);
 
-    LOG_INFO("socket(%d) listen and bind succ %s:%u", socket_, host.c_str(), port);
+    LOG_INFO("socket(%d)listen and bind succ %s:%d", socket_, host.c_str(), port);
 
     return 0;
 }
@@ -97,12 +97,12 @@ void TcpServer::handleConnection(int32_t socket, uint32_t events)
         { 
             if(ERRNO_WOULDBLOCK)
             {
-                LOG_INFO("ERRNO_WOULDBLOCK do nothing" );
+                LOG_INFO_STR("ERRNO_WOULDBLOCK do nothing");
                 return ;
             }
             if(ERRNO_ECONNABORTED)
             {
-                LOG_INFO("ERRNO_WOULDBLOCK continue" );
+                LOG_INFO_STR("ERRNO_WOULDBLOCK continue");
                 continue;
             }
             LOG_ERROR("socket accept4 faild errno_str = %s", STR_ERRNO);
@@ -110,8 +110,7 @@ void TcpServer::handleConnection(int32_t socket, uint32_t events)
         }
         assert(fd >= IOLoop::MIN_FD );
 
-        LOG_INFO("socket(%d) accept|fd=%d|addr=%s:%d", socket_, fd, inet_ntoa(addr.sin_addr), addr.sin_port );
-        
+        LOG_INFO("socket(%d) accept|fd=%d|addr=%s|%d", socket_, fd, inet_ntoa(addr.sin_addr), addr.sin_port);        
         IOStreamPtr  stream(new IOStream(fd));
         handleStream(stream);
         break;

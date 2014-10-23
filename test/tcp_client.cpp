@@ -10,7 +10,7 @@
 #include "boost/enable_shared_from_this.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/bind.hpp"
-
+#include "tornado/Util.h"
 
 namespace tornado
 {
@@ -24,12 +24,12 @@ public:
         loopnum_(1),
         curnum_(0)
     {
-        LOG_DEBUG("------>TcpClient create");
+        LOG_DEBUG_STR("------>TcpClient create");
     }
 
     ~TcpClient()
     {
-        LOG_DEBUG("<------~TcpClient exit");
+        LOG_DEBUG_STR("<------~TcpClient exit");
     }
 
     bool connect(const char* ip, short port, int timeoutMS = 1000)
@@ -37,7 +37,7 @@ public:
         int socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (socket < 0)
         {
-            LOG_ERROR("create socket fail errno_str = %s", STR_ERRNO);
+            LOG_ERROR("create socket fail errno_str =%s", STR_ERRNO);
             return false;
         }
         stream_.reset( new IOStream(socket) );
@@ -52,7 +52,7 @@ public:
 
     virtual void connectDone(int err)
     {
-        LOG_INFO("");  
+        LOG_DEBUG_STR("")  
         io_loop_->removeTimeout(request_timer_);
         if(err)
         {
@@ -66,7 +66,7 @@ public:
 
     virtual void onStreamClose()
     {
-        LOG_INFO("");
+        LOG_DEBUG_STR("")
         /*if(callback_)
         {
             callback_.clear();
@@ -89,7 +89,7 @@ public:
 
     void writeDone()
     {
-        LOG_INFO("");
+        LOG_DEBUG_STR("")  
         io_loop_->removeTimeout(request_timer_);
         stream_->readBytes(400, boost::bind(&TcpClient::readDone, shared_from_this(), _1));
         request_timer_ = io_loop_->addTimeout(3000, boost::bind(&TcpClient::onRequestTimeout, shared_from_this(), _1, _2));
@@ -98,19 +98,19 @@ public:
     void readDone(const std::string& data)
     {
         io_loop_->removeTimeout(request_timer_);
-        LOG_INFO("");
+        LOG_INFO_STR("PKG Done")
         sendRequest();
     }
   
     void onConnectTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN("onConnectTimeout timeout  close stream_");
+        LOG_WARN_STR("onConnectTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
     void onRequestTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN("onRequestTimeout timeout  close stream_");
+        LOG_WARN_STR("onRequestTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
@@ -135,24 +135,22 @@ typedef boost::shared_ptr<TcpClient> TcpClientPtr;
 
 }
 
-int main(int argc, char** args)
-{
-    if( argc < 4 )//loopnum
-    {
-        printf("argc < 4\nusing ./tcp_client ip port loopnum  <log_level>\n");
-        return -1;
-    }
-    std::string ip = args[1];
-    short port = atoi(args[2]);
-    int loopnum = atoi(args[3]);
+#include "gflags/gflags.h"
+DEFINE_string(ip,  "", "--ip=172.0.0.1  svr ip");
+DEFINE_int32(port, 8888, "--port=8888  svr port");
+DEFINE_int32(pkgnum, 10, "--pkgnum=10  send pkg num");
 
-    tornado::set_log_level(argc-3, args+3);
+
+int main(int argc, char* argv[])
+{
+    tornado::init_log(argc, argv);//have ParseCommandLineFlags
+
 
     tornado::TcpClientPtr tcp(new tornado::TcpClient());
 
     tornado::IOLoop::instance()->addCallback( 
         boost::bind(&tornado::TcpClient::run, tcp, 
-                ip, port, loopnum) );
+                FLAGS_ip, FLAGS_port, FLAGS_pkgnum) );
     tornado::IOLoop::instance()->start(); 
     return 0;
 }

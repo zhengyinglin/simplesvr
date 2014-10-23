@@ -9,6 +9,16 @@
 #include "tornado/IOLoop.h"
 #include "tornado/Logging.h"
 #include <signal.h>
+#include "tornado/Util.h"
+
+
+
+#include "gflags/gflags.h"
+DEFINE_int32(port, 8888, "--port=8888  listen port");
+
+DEFINE_string(tcp_ip,  "", "--tcp_ip=172.0.0.1  get data svr ip");
+DEFINE_int32(tcp_port, 8888, "--tcp_port=8888  get data svr port");
+
 
 namespace tornado
 {
@@ -19,7 +29,7 @@ class MainHandler : public RequestHandler
 public:
     virtual void get()
     {
-        LOG_INFO("MainHandler");
+        LOG_INFO_STR("MainHandler");
         write("hello world");
         finish();
     }
@@ -38,12 +48,12 @@ public:
         request_timer_(0),
         callback_ ( cb )
     {
-        LOG_DEBUG("------>MyTCP create");
+        LOG_DEBUG_STR("------>MyTCP create");
     }
 
     ~MyTCP()
     {
-        LOG_DEBUG("<------~MyTCP exit");
+        LOG_DEBUG_STR("------>~MyTCP exit");
     }
 
     bool connect(const char* ip, short port, int timeoutMS = 1000)
@@ -66,11 +76,11 @@ public:
 
     virtual void connectDone(int err)
     {
-        LOG_INFO("");  
+        LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
         if(err)
         {
-            LOG_ERROR("connect socket fail");
+            LOG_ERROR_STR("connect socket fail");
             stream_->close();
             //will close in stream error  auto  //stream_->clear();
             return ;
@@ -84,7 +94,7 @@ public:
 
     virtual void onStreamClose()
     {
-        LOG_INFO("");
+        LOG_DEBUG_STR("");  
         //clear();
 
         if(callback_)
@@ -99,16 +109,16 @@ public:
 
     void writeDone()
     {
+        LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
-        LOG_INFO("");
         stream_->readBytes(400, boost::bind(&MyTCP::readDone, this, _1));
         request_timer_ = io_loop_->addTimeout(3000, boost::bind(&MyTCP::onRequestTimeout, shared_from_this(), _1, _2));
     }
     
     void readDone(const std::string& data)
     {
+        LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
-        LOG_INFO("");
         if(callback_)
         {
             callback_(data);
@@ -118,19 +128,19 @@ public:
 
     void run()
     {
-        connect("10.193.0.102", 7777);
+        connect(FLAGS_tcp_ip.c_str(), FLAGS_tcp_port);
     }
 
   
     void onConnectTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN("onConnectTimeout timeout  close stream_");
+        LOG_WARN_STR("onConnectTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
     void onRequestTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN("onRequestTimeout timeout  close stream_");
+         LOG_WARN_STR("onRequestTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
@@ -155,7 +165,7 @@ public:
 
     virtual void get()
     {
-        LOG_INFO("");
+        LOG_INFO_STR("");
        // MyTCPPtr  tcp_;
         tcp_.reset( new MyTCP( boost::bind(&ExampleHandler::getDone, GetSharedThis(), _1)  ) );
         tcp_->run();
@@ -163,7 +173,7 @@ public:
 
     void getDone(const std::string& data)
     {
-        LOG_INFO("");
+        LOG_INFO_STR("");
         write("hello world recv");
         write(data);
         finish();
@@ -179,9 +189,11 @@ private:
 
 }
 
-int main(int argc, char** args)
+
+
+int main(int argc, char** argv)
 {
-    tornado::set_log_level(argc, args);
+    tornado::init_log(argc, argv); //have ParseCommandLineFlags
 
     tornado::Application::HandlerMap  process;
     process["/"] = new tornado::MainHandler;
@@ -194,12 +206,12 @@ int main(int argc, char** args)
         );
     if(sfd < 0)
     {
-        LOG_ERROR("addSignalHandler failed");
+        LOG_ERROR_STR("addSignalHandler failed");
         return -1;
     }
     LOG_INFO("addSignalHandler fd=%d", sfd);
 
-    if( app.listen("", 8080) )//10.12.16.139
+    if( app.listen("", FLAGS_port) )//10.12.16.139
         return -1;
     tornado::IOLoop::instance()->start();
     return 0;

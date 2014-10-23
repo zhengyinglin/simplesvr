@@ -2,6 +2,7 @@
 #include "boost/algorithm/string.hpp"
 #include "Logging.h"
 #include <algorithm> 
+#include "Util.h"
 
 
 namespace tornado
@@ -18,7 +19,7 @@ int HTTPHeaders::parse(const std::string& headers, size_t pos)
         if(index == std::string::npos)
         {
             //log warning ...
-            printf("parse warnning ....");
+            LOG_WARN_STR("parse warnning ....");
             break;
         }
         if(index > pos)
@@ -34,7 +35,7 @@ int HTTPHeaders::parse(const std::string& headers, size_t pos)
     //parse cookies
     if( parseCookies() )
     {
-        LOG_WARN("parseCookies fail");
+        LOG_WARN_STR("parseCookies fail");
         return 100;
     }
    
@@ -50,7 +51,7 @@ int HTTPHeaders::parseLine(const char* line, size_t len)
     //如果有2个一样的后面那个覆盖前面那个
     if(line[0] == ' ')//isspace # continuation of a multi-line header
     {
-        printf("continuation of a multi-line header\n");
+        LOG_WARN_STR("continuation of a multi-line header");
         if(last_key_.empty())
         {
             return -1;
@@ -66,14 +67,12 @@ int HTTPHeaders::parseLine(const char* line, size_t len)
         const char* sem = std::find(line, end, ':');
         if(sem == end)
         {
-            //printf("=====line-->[%s]\n", line.substr(pos, len).c_str());
             return -2;
         }
         last_key_.assign(line, sem-line);
         last_value_.assign(sem + 1, end - sem - 1);
         boost::algorithm::trim(last_value_) ;
         headers_[ last_key_ ] = last_value_;
-        //printf("parse_line-->[%s<==>%s]\n", last_key_.c_str(), last_value_.c_str());
     }
     return 0;
 }
@@ -96,7 +95,7 @@ int HTTPHeaders::parseCookies()
         boost::split(vArgs, *iter, boost::is_any_of("="));
         if(vArgs.size() != 2)
         {
-            LOG_WARN("[%s]= num %d != 2", iter->c_str(), (int)vArgs.size() );
+            LOG_WARN("%s num %zu!= 2", iter->c_str(), vArgs.size() );
             return -1;
         }
         cookies_[ vArgs[0] ] = vArgs[1]; 
@@ -149,17 +148,18 @@ HTTPConnection::HTTPConnection(IOStreamPtr& stream, HttpRequestCallback& request
     stream_(stream), request_callback_(request_callback), request_finished_(false),
     start_time_( TimeUtil::curTimeMS() ), finish_time_(0)
 {
-    LOG_DEBUG("-------->HTTPConnection create");
+    LOG_DEBUG_STR("-------->HTTPConnection create");
 }
 
 HTTPConnection::~HTTPConnection()
 {
-    LOG_DEBUG("<--------~HTTPConnection release");
+    LOG_DEBUG_STR("<--------~HTTPConnection release");
 }
 
 void HTTPConnection::onStreamColse()
 {
-    LOG_DEBUG("stream close --> onConnectionClose");
+    LOG_DEBUG_STR("stream close --> onConnectionClose");
+
     if(close_callback_)
     {
         close_callback_();
@@ -174,18 +174,18 @@ void HTTPConnection::startRun()
     int iRet = stream_->readUntil("\r\n\r\n", boost::bind(&HTTPConnection::onHeaders, shared_from_this(), _1) );
     if(iRet)
     {
-        LOG_WARN("read_until fail ret = %d", iRet);
+        LOG_WARN("read_until fail ret=%d", iRet);
     }
 }
 
 
 void HTTPConnection::onHeaders(const std::string& data)
 {
-    LOG_DEBUG("[%s]", data.c_str());
+    LOG_DEBUG("data=%s", data.c_str());
     int ret = parseHttpRequest(data);
     if(ret)
     {
-        LOG_WARN("parseHttpRequest fail ret = %d close stream_", ret);
+        LOG_WARN("close stream_ parseHttpRequest fail ret = %d", ret);
         stream_->close();
         return ;
     }
@@ -194,7 +194,7 @@ void HTTPConnection::onHeaders(const std::string& data)
     {
          if( content_length > 1024 * 100 )
          {
-             LOG_WARN("Content-Length %d too long close stream_", content_length);
+             LOG_WARN("close stream_ Content-Lengthtoo long size =%d", content_length);
              stream_->close();
              return ;
          }
@@ -205,7 +205,7 @@ void HTTPConnection::onHeaders(const std::string& data)
          stream_->readBytes(content_length, boost::bind(&HTTPConnection::onRequestBody, shared_from_this(), _1));
          return;
     }
-    LOG_DEBUG("Content-Length 0 run callback");
+    LOG_DEBUG_STR("Content-Length 0 run callback");
     request_callback_(shared_from_this());
 }
 
@@ -216,7 +216,7 @@ void HTTPConnection::onRequestBody(const std::string& data)
     {
         if( parseBodyArguments(data) )
         {
-            LOG_WARN("parse_body_arguments failed close stream");
+            LOG_WARN_STR("parse_body_arguments failed close stream");
             stream_->close();
             return ;
         }
@@ -230,7 +230,7 @@ int HTTPConnection::parseHttpRequest(const std::string& data)
     size_t eol = data.find(CRLF);
     if(eol == std::string::npos)
     {
-        LOG_WARN("can not find CRLF");
+        LOG_WARN_STR("can not find CRLF");
         return -1;
     }
     //copy
@@ -242,7 +242,7 @@ int HTTPConnection::parseHttpRequest(const std::string& data)
     boost::split(vItems, start_line, boost::is_any_of(" "));
     if(vItems.size() != 3)
     {
-        LOG_WARN("Malformed HTTP request start line should 3 item but %d", (int)vItems.size());
+        LOG_WARN("Malformed HTTP request start line should 3 item but %zu", vItems.size() );
         return -2;
     }
     
@@ -253,7 +253,7 @@ int HTTPConnection::parseHttpRequest(const std::string& data)
 
     if(!boost::starts_with(request_.version, "HTTP/") )
     {
-        LOG_WARN("_BadRequestException:Malformed HTTP version[%s] in HTTP Request-Line", request_.version.c_str());
+        LOG_WARN(" in HTTP Request-Line _BadRequestException:Malformed HTTP version %s", request_.version.c_str() );
         return -3;
     }
 
@@ -263,7 +263,7 @@ int HTTPConnection::parseHttpRequest(const std::string& data)
         boost::split(vItems2, uri, boost::is_any_of("?"));
         if(vItems2.size() > 2)
         {
-            LOG_WARN("parse uri failed have ? num %d > 2 ", (int) vItems2.size() );
+            LOG_WARN("parse uri failed have num %zu > 2", vItems2.size()  );
             return -4;
         }
         if(vItems2.size() >= 1)
@@ -275,7 +275,7 @@ int HTTPConnection::parseHttpRequest(const std::string& data)
             request_.query = vItems2[1];
             if( parseQsBytes(request_.query, request_.arguments) )
             {
-                LOG_WARN("parseQsBytes failed");
+                LOG_WARN_STR("parseQsBytes failed");
                 return -5;
             }
         }
@@ -285,7 +285,7 @@ int HTTPConnection::parseHttpRequest(const std::string& data)
     int ret =request_.headers.parse(data, eol);
     if(ret )
     {
-        LOG_WARN("Malformed HTTP headers headers.parse failed ret = %d", ret);
+        LOG_WARN("Malformed HTTP headers headers.parse failed ret =%d", ret);
         return -6;
     }
 
@@ -301,13 +301,13 @@ int HTTPConnection::parseBodyArguments(const std::string& body)
     {
         if( parseQsBytes(body, request_.body_arguments) )
         {
-            LOG_WARN("parseQsBytes fail Invalid x-www-form-urlencoded body: %s", body.c_str() )
+            LOG_WARN("parseQsBytes fail Invalid x-www-form-urlencoded body: %s", body.c_str());
             return -1;
         }
     }
     else 
     {
-       LOG_WARN("Unsupported Content-Encoding: %s",  content_type.c_str() );
+        LOG_WARN("Unsupported Content-Encoding:  %s", content_type.c_str());
     }
     return 0;
 }
@@ -324,7 +324,7 @@ int HTTPConnection::parseQsBytes(const std::string& qs, std::map<std::string, st
        
         if(vArgs.size() != 2)
         {
-            LOG_WARN("= num %d != 2", (int)vArgs.size() );
+            LOG_WARN("=num %zu != 2", vArgs.size());
             return -1;
         }
         arguments[ vArgs[0] ] = vArgs[1]; 
@@ -340,7 +340,7 @@ void HTTPConnection::finish()
     request_finished_ = true;
     if(!stream_->writing())
     {
-       LOG_INFO("OK close stream");
+       LOG_INFO_STR("OK close stream");
        stream_->close();
     }
 }
@@ -369,7 +369,7 @@ void HTTPConnection::onWriteComplete()
 {
     if(request_finished_ && !stream_->writing() && !stream_->closed() )
     {
-        LOG_INFO("OK close stream");
+        LOG_INFO_STR("OK close stream");
         stream_->close();
     }
 }

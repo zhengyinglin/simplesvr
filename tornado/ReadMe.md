@@ -5,7 +5,8 @@
 
 ===========================
 
-基于[tornado](https://github.com/tornadoweb/tornado) 实现的一个c++异步库（依赖boost库， gcc >= 4.4.5）
+基于[tornado](https://github.com/tornadoweb/tornado) 实现的一个c++异步库
+（依赖boost库，gflags gcc >= 4.4.5）
 
 ##文件说明
 
@@ -56,3 +57,12 @@ HttpServer.h     基于tcpsvr的一个http服务器
 Web.h            httpsvr的封装
 
 
+##编译gflag
+可选编译gflag
+https://github.com/schuhschuh/gflags
+
+tar -xvf gflags-2.1.1.tar.gz
+cd gflags-2.1.1 && mkdir build && cd build
+CXXFLAGS="-fPIC -O3 -DNDEBUG"  cmake .. -DGFLAGS_NAMESPACE=google  -DCMAKE_INSTALL_PREFIX=/xxxx/google/gflags-2.1.1 
+make VERBOSE=1
+make install

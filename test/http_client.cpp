@@ -25,7 +25,7 @@ class MyTCP : public TcpClient
 
     void write_done(int32_t fd)
     {
-        LOG_INFO("connect timeout");
+        LOG_INFO_STR("connect timeout");
         stream_->read_bytes(16, boost::bind(&MyTCP::read_done, this, _1, _2));
     }
     

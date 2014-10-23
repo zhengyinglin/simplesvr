@@ -39,7 +39,7 @@ namespace folly {
 
 class TimeoutQueue {
  public:
-  typedef int64_t Id;
+  typedef uint64_t Id;
   typedef boost::function<void(Id, int64_t)> Callback;
 
   TimeoutQueue() : nextId_(1) { }
