@@ -52,8 +52,8 @@ public:
     int justWriteBytesToBuff(const char* data, int len);
 
     int readBytes(int num_bytes, ReadCallback callback);
-
     int readUntil(const std::string& delimiter, ReadCallback callback);
+    int readUntilClose(ReadCallback callback);
 
     bool reading();
     bool writing();
@@ -81,6 +81,7 @@ private:
     Buffer  write_buffer_;
     size_t   read_bytes_;
     std::string read_delimiter_;
+    bool   read_until_close_;
 };
 
 typedef boost::shared_ptr<IOStream> IOStreamPtr;

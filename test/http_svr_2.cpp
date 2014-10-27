@@ -193,7 +193,7 @@ private:
 
 int main(int argc, char** argv)
 {
-    tornado::init_log(argc, argv); //have ParseCommandLineFlags
+    tornado::init_log(argc, argv); 
 
     tornado::Application::HandlerMap  process;
     process["/"] = new tornado::MainHandler;

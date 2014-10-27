@@ -26,7 +26,8 @@ IOStream::IOStream(int32_t socket):
         connecting_(false),
         closed_(false),
         state_(0),
-        read_bytes_(0)
+        read_bytes_(0),
+        read_until_close_(false)
 {
     assert(socket_ >= IOLoop::MIN_FD );
     SocketUtil::setNonblock(socket_);
@@ -49,6 +50,25 @@ void IOStream::close()
         return ;
     }
     closed_ = true;
+
+    if(read_until_close_)
+    {
+        read_until_close_ = false;
+        size_t buffsize = read_buffer_.readableBytes();
+        if(buffsize > 0)
+        {
+            StringPtr result(new std::string);
+            if( read_buffer_.readBytesToString(buffsize, *result) )
+            {
+                if( read_callback_ )
+                {
+                    LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
+                    io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
+                    read_callback_.clear();
+                }
+            }
+        }
+    }
 
     if(state_ != 0)
     {
@@ -176,11 +196,12 @@ int IOStream::justWriteBytesToBuff(const char* data, int len)
 }
 
 int IOStream::readBytes(int num_bytes, ReadCallback callback)
-{
-    assert(read_delimiter_.empty() && read_bytes_ == 0 );
-    assert(read_callback_.empty());
+{ 
     if(num_bytes <= 0 )
         return -1;
+    assert(read_callback_.empty());
+    assert(read_delimiter_.empty() && read_bytes_ == 0 && read_until_close_ == false );
+
 
     //本地缓存有数据，直接返回
     if (read_buffer_.readableBytes() >= (unsigned)num_bytes )
@@ -223,7 +244,7 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
         return -1;
 
     assert(read_callback_.empty());
-    assert(read_delimiter_.empty() && read_bytes_ == 0 );
+    assert(read_delimiter_.empty() && read_bytes_ == 0 && read_until_close_ == false );
 
     //本地缓存有数据，直接返回
     int index = read_buffer_.find(delimiter);
@@ -261,7 +282,27 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
     return 0;
 }
     
-       
+int IOStream::readUntilClose(ReadCallback callback)
+{
+    assert(read_callback_.empty());
+    assert(read_delimiter_.empty() && read_bytes_ == 0 && read_until_close_ == false );
+    
+    read_until_close_ = true;
+    read_callback_ = callback;
+
+    if( handleRead() )
+    {
+        LOG_ERROR_STR("handleRead failed");
+        this->close();
+        return -1;
+    }
+
+    if(!closed_)
+    {
+        addIOState(IOLoop::READ);
+    }
+    return 0;
+}
 
 void IOStream::addIOState(int state)
 {
@@ -450,6 +491,29 @@ int IOStream::handleRead()
             LOG_ERROR_STR("-------------- readBytesToString faile");
             return 1;
         }
+    }
+    else if(read_until_close_)
+    {
+        size_t buffsize = read_buffer_.readableBytes();
+        if(buffsize > 0)
+        {
+            StringPtr result(new std::string);
+            if( read_buffer_.readBytesToString(buffsize, *result) )
+            {
+                if( read_callback_ )
+                {
+                    LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
+                    io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
+                }
+                else
+                {
+                    LOG_WARN_STR("read_until_close_ but read_callback_ is emtpy");
+                }
+                return 0;
+            }
+            LOG_ERROR_STR("-------------- readBytesToString faile");
+            return -1;
+        }    
     }
     return 0;
 }
