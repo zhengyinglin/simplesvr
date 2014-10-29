@@ -9,6 +9,8 @@
 #define _TORNADO_BUFFER_H_
 #include <sys/types.h>
 #include <string>
+#include <vector>
+#include <map>
 
 namespace tornado
 {
@@ -83,13 +85,30 @@ private:
 
 private:
     char*        buff_;
-    size_t       buff_len_;
+    const size_t buff_len_;
     size_t       read_index_;
     size_t       write_index_;
 };
 
 
   
+//Buffer 对象里面的buff_ 内存管理类
+class BufferMemoryManager
+{
+private:
+    BufferMemoryManager(){}
+public:
+    ~BufferMemoryManager();
+    //获取
+    char* get(size_t buff_size);
+    //回收
+    void recover(char* buff, size_t buff_size);
+
+public:
+    static BufferMemoryManager* instance();
+private:
+    std::map<size_t, std::vector<char*>  >  mbuffs_;
+};
 
 
 

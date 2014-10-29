@@ -115,19 +115,19 @@ done.
 
 Transactions:                 100000 hits
 Availability:                 100.00 %
-Elapsed time:                   6.46 secs
+Elapsed time:                   6.22 secs
 Data transferred:               0.19 MB
 Response time:                  0.01 secs
-Transaction rate:           15479.88 trans/sec
+Transaction rate:           16077.17 trans/sec
 Throughput:                     0.03 MB/sec
-Concurrency:                   99.34
+Concurrency:                   99.44
 Successful transactions:      100000
 Failed transactions:               0
 Longest transaction:            0.02
 Shortest transaction:           0.00
 ```
 
-大概每秒 15K多 请求
+大概每秒 16K 请求
 
 
 
@@ -150,12 +150,12 @@ done.
 
 Transactions:                 100000 hits
 Availability:                 100.00 %
-Elapsed time:                   7.54 secs
+Elapsed time:                   7.25 secs
 Data transferred:               1.05 MB
 Response time:                  0.01 secs
-Transaction rate:           13262.60 trans/sec
+Transaction rate:           13793.10 trans/sec
 Throughput:                     0.14 MB/sec
-Concurrency:                   99.68
+Concurrency:                   99.50
 Successful transactions:      100000
 Failed transactions:               0
 Longest transaction:            0.02
@@ -205,3 +205,48 @@ Shortest transaction:           0.00
 大概每秒 7k多（之前的1半） 请求，如果tcp请求使用连接池可能性能会好一点
 
 
+
+##与nginix对比
+对于http请求，单进程极限的 13K/s 左右，相比nginix（21K/s）还是有一点差距
+
+nginx helloworld 处理数据
+https://github.com/perusio/nginx-hello-world-module
+```Bash
+./siege -b -c 100 -r 1000 http://10.193.0.103:8080/hello  > httplog.log
+** SIEGE 3.0.0
+** Preparing 100 concurrent users for battle.
+The server is now under siege...
+done.
+
+Transactions:                 100000 hits
+Availability:                 100.00 %
+Elapsed time:                   4.63 secs
+Data transferred:               1.14 MB
+Response time:                  0.00 secs
+Transaction rate:           21598.27 trans/sec
+Throughput:                     0.25 MB/sec
+Concurrency:                   99.20
+Successful transactions:      100000
+Failed transactions:               0
+Longest transaction:            0.02
+Shortest transaction:           0.00
+
+./siege -b -c 300 -r 1500 http://10.193.0.103:8080/hello  > httplog.log
+** SIEGE 3.0.0
+** Preparing 300 concurrent users for battle.
+The server is now under siege...
+done.
+
+Transactions:                 450000 hits
+Availability:                 100.00 %
+Elapsed time:                  20.91 secs
+Data transferred:               5.15 MB
+Response time:                  0.01 secs
+Transaction rate:           21520.80 trans/sec
+Throughput:                     0.25 MB/sec
+Concurrency:                  298.76
+Successful transactions:      450000
+Failed transactions:               0
+Longest transaction:            0.04
+Shortest transaction:           0.00
+```

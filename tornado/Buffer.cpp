@@ -7,18 +7,21 @@
 namespace tornado
 {
 
-Buffer::Buffer(size_t buff_len)
+Buffer::Buffer(size_t buff_len):
+    buff_(NULL),
+    buff_len_(buff_len),
+    read_index_(0),
+    write_index_(0)
 {    
-    buff_len_ = buff_len;
     assert(buff_len_ > 0 && buff_len_ < 1024* 1024 * 10);
-    read_index_ = 0 ;
-    write_index_ = 0;
-    buff_  = new char [buff_len_];
+    //buff_  = new char [buff_len_];
+    buff_  = BufferMemoryManager::instance()->get(buff_len_);
 }
 
 Buffer::~Buffer()
 {
-    delete []buff_;
+   //delete []buff_;
+   BufferMemoryManager::instance()->recover(buff_, buff_len_);
 }
 
 void Buffer::clear()
@@ -102,6 +105,64 @@ int Buffer::find(const std::string& delimiter)
         
     return pos - begin();
 }
+
+
+
+  
+//=================Buffer 对象里面的buff_ 内存管理类
+
+BufferMemoryManager::~BufferMemoryManager()
+{
+    for(auto iter = mbuffs_.begin(); iter != mbuffs_.end(); ++iter)
+    {
+        for( auto i = iter->second.begin(); i != iter->second.end(); ++i )
+        {
+            delete (*i);
+        }
+    }
+}
+
+char* BufferMemoryManager::get(size_t buff_size)
+{
+    auto it = mbuffs_.find(buff_size);
+    if( it != mbuffs_.end() )
+    {
+        auto& queue = it->second;
+        if( !queue.empty() )
+        {
+            char* buff = queue.back();
+            queue.pop_back();
+            return buff;
+        }
+    }
+    char* buff = new char [buff_size];
+    return buff;
+}
+
+void BufferMemoryManager::recover(char* buff, size_t buff_size)
+{
+    auto it = mbuffs_.find(buff_size);
+    if( it != mbuffs_.end() )
+    {
+        auto& queue = it->second;
+        queue.push_back(buff);
+        //add release here 
+    }
+    else
+    {
+        std::vector<char*>  queue;
+        queue.reserve(128);
+        queue.push_back(buff);
+        mbuffs_[buff_size] = queue;
+    }
+}
+
+BufferMemoryManager* BufferMemoryManager::instance()
+{
+    static BufferMemoryManager  _instance;
+    return &_instance;
+}
+
 
 
 }//namespace tornado
