@@ -208,21 +208,21 @@ protected:
 };
 
 
-//class StringShmSet :  public ShmSet<shm_string>
-//{
-//public:
-//    StringShmSet(const char* pMemName, size_t  alloc_size = 0):
-//        ShmSet<shm_string>(pMemName, alloc_size)
-//    {
-//    }
-//
-//    void insert(const char* buff, size_t size)
-//    { 
-//        CharAllocator charAloc(ShmSet<shm_string>::m_pSegment->get_segment_manager());
-//        shm_string  new_val(buff, size, charAloc);
-//        ShmSet<shm_string>::m_pSet->insert(new_val);
-//    }
-//};
+class StringShmSet :  public ShmSet<shm_string>
+{
+public:
+    StringShmSet(const char* pMemName, size_t  alloc_size = 0):
+        ShmSet<shm_string>(pMemName, alloc_size)
+    {
+    }
+
+    void insert(const char* buff, size_t size)
+    { 
+        CharAllocator charAloc(ShmSet<shm_string>::m_pSegment->get_segment_manager());
+        shm_string  new_val(buff, size, charAloc);
+        ShmSet<shm_string>::m_pSet->insert(new_val);
+    }
+};
 
 
 
