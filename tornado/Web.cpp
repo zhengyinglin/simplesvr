@@ -75,12 +75,12 @@ RequestHandler::RequestHandler():
         finished_(false),
         status_code_(200)
 {
-    LOG_DEBUG_STR("------> RequestHandler create");
+    TORNADO_LOG_DEBUG_STR("------> RequestHandler create");
 }
 
 RequestHandler::~RequestHandler()
 {
-    LOG_DEBUG_STR("<------- RequestHandler release");
+    TORNADO_LOG_DEBUG_STR("<------- RequestHandler release");
 }
 
 void RequestHandler::setHTTPConnection(const HTTPConnectionPtr&  conn)
@@ -91,14 +91,14 @@ void RequestHandler::setHTTPConnection(const HTTPConnectionPtr&  conn)
 
 void RequestHandler::on_connect_close()
 {
-   LOG_DEBUG_STR("on_connect_close");
+   TORNADO_LOG_DEBUG_STR("on_connect_close");
 }
 
 void RequestHandler::write(const std::string& chunk)
 {
     if (finished_)
     {
-        LOG_ERROR_STR("Cannot write() after finish()");
+        TORNADO_LOG_ERROR_STR("Cannot write() after finish()");
         return ;
     }        
     buff_.append(chunk);
@@ -108,7 +108,7 @@ void RequestHandler::write(const char* chunk, size_t len)
 {
     if (finished_)
     {
-        LOG_ERROR_STR("Cannot write() after finish()");
+        TORNADO_LOG_ERROR_STR("Cannot write() after finish()");
         return ;
     }        
     buff_.append(chunk, len);
@@ -129,11 +129,11 @@ void RequestHandler::send_error(int status_code)
 
 void RequestHandler::finish()
 {
-    LOG_DEBUG_STR("");
+    TORNADO_LOG_DEBUG_STR("");
     //todo add 304 support
     if(finished_)
     {
-        LOG_ERROR_STR("finish() called twice");
+        TORNADO_LOG_ERROR_STR("finish() called twice");
         return ;
     }
     finished_ = true;
@@ -169,7 +169,7 @@ void RequestHandler::execute()
 {
     if(finished_)
     {
-        LOG_ERROR("finish() called twice");
+        TORNADO_LOG_ERROR("finish() called twice");
         return ;
     }
     const std::string& method = conn_->getRequset().method;
@@ -195,7 +195,7 @@ void RequestHandler::execute()
 void RequestHandler::_log()
 {
    const HTTPRequest& request = conn_->getRequset();
-   LOG_INFO("%s %s %s| %d %s %.3f", request.method.c_str(), request.path.c_str(), request.query.c_str(), status_code_, 
+   TORNADO_LOG_INFO("%s %s %s| %d %s %.3f", request.method.c_str(), request.path.c_str(), request.query.c_str(), status_code_, 
        HTTPCode::instance().toStr(status_code_), conn_->getRequestTimeMS()/1000.0 ); 
 }
 
@@ -249,7 +249,7 @@ void Application::stop()
     
 void Application::signal_handler_stop(int32_t fd, uint32_t events)
 {  
-    LOG_WARN("Caught signal : will stop http application signal fd=%d", fd);
+    TORNADO_LOG_WARN("Caught signal : will stop http application signal fd=%d", fd);
     //must be remove 
     IOLoop::instance()->removeHandler(fd);
     stop();

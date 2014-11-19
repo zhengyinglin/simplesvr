@@ -93,22 +93,22 @@ private:
 
   
 //Buffer 对象里面的buff_ 内存管理类
-class BufferMemoryManager
-{
-private:
-    BufferMemoryManager(){}
-public:
-    ~BufferMemoryManager();
-    //获取
-    char* get(size_t buff_size);
-    //回收
-    void recover(char* buff, size_t buff_size);
-
-public:
-    static BufferMemoryManager* instance();
-private:
-    std::map<size_t, std::vector<char*>  >  mbuffs_;
-};
+//class BufferMemoryManager
+//{
+//private:
+//    BufferMemoryManager(){}
+//public:
+//    ~BufferMemoryManager();
+//    //获取
+//    char* get(size_t buff_size);
+//    //回收
+//    void recover(char* buff, size_t buff_size);
+//
+//public:
+//    static BufferMemoryManager* instance();
+//private:
+//    std::map<size_t, std::vector<char*>  >  mbuffs_;
+//};
 
 
 

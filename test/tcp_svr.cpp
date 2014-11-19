@@ -19,12 +19,12 @@ public:
     TcpConnection(IOStreamPtr& stream):
         stream_(stream)
     {
-        LOG_DEBUG_STR("--------->TcpConnection create stream");
+        TORNADO_LOG_DEBUG_STR("--------->TcpConnection create stream");
     }
 
     virtual ~TcpConnection()
     {
-        LOG_DEBUG_STR("<-------~TcpConnection release");
+        TORNADO_LOG_DEBUG_STR("<-------~TcpConnection release");
     }
 
     void startRun()
@@ -39,7 +39,7 @@ public:
             boost::bind(&TcpConnection::readHeader, shared_from_this(), _1));
         if(iRet)
         {
-            LOG_ERROR("readBytes faile ret = %d", iRet);
+            TORNADO_LOG_ERROR("readBytes faile ret = %d", iRet);
         }
         return iRet;
     }
@@ -47,7 +47,7 @@ public:
     void readHeader(const std::string& data)
     {
         int fd = stream_->getFd();
-        LOG_DEBUG("fd=%d|data=%s", fd, data.c_str());
+        TORNADO_LOG_DEBUG("fd=%d|data=%s", fd, data.c_str());
 
         //std::string  buff(400, 'a');
         //int iRet = stream_->writeBytes(buff.c_str(), buff.size(), 
@@ -55,19 +55,19 @@ public:
             boost::bind(&TcpConnection::OnWriterDone, shared_from_this()) );
         if( iRet )
         {
-            LOG_ERROR("fd=%d|writeBytes faile ret = %d", fd, iRet);
+            TORNADO_LOG_ERROR("fd=%d|writeBytes faile ret = %d", fd, iRet);
         }
     }
       
     void OnWriterDone()
     {
-        LOG_DEBUG_STR("startReading again");
+        TORNADO_LOG_DEBUG_STR("startReading again");
         startReading();
     }
 
     void onStreamColse()
     {
-        LOG_DEBUG_STR("onStreamColse");
+        TORNADO_LOG_DEBUG_STR("onStreamColse");
     }
 
 private:
@@ -81,7 +81,7 @@ class MySvr : public TcpServer
 protected:
     virtual void handleStream(IOStreamPtr& stream)
     {
-        LOG_INFO_STR("handle_stream");
+        TORNADO_LOG_INFO_STR("handle_stream");
         TcpConnectionPtr ptr(new TcpConnection(stream));
         ptr->startRun();
     }
@@ -90,7 +90,7 @@ public:
     {
         //must be remove 
         tornado::IOLoop::instance()->removeHandler(fd);
-        LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
+        TORNADO_LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
         stop();
     }
 };
@@ -112,10 +112,10 @@ int main(int argc, char* argv[])
         );
     if(sfd < 0)
     {
-        LOG_ERROR_STR("addSignalHandler failed");
+        TORNADO_LOG_ERROR_STR("addSignalHandler failed");
         return -1;
     }
-    LOG_INFO("addSignalHandler fd=%d", sfd);
+    TORNADO_LOG_INFO("addSignalHandler fd=%d", sfd);
 
     if( svr.listen("", FLAGS_port) )//10.12.16.139
         return -1;

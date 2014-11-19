@@ -67,26 +67,26 @@ private:
 
 } // namespace tornado
 
-#define LOG_INFO(szFormat, args...) \
+#define TORNADO_LOG_INFO(szFormat, args...) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::INFO)) \
         { \
             tornado::LogFileObject::instance().write("INFO", __FILE__, __FUNCTION__,  __LINE__, szFormat, ##args); \
         };
 
-#define LOG_ERROR(szFormat, args...) \
+#define TORNADO_LOG_ERROR(szFormat, args...) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::ERROR)) \
         { \
            tornado::LogFileObject::instance().write("ERROR", __FILE__, __FUNCTION__,  __LINE__, szFormat, ##args); \
         };
 
 
-#define LOG_WARN(szFormat, args...) \
+#define TORNADO_LOG_WARN(szFormat, args...) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::WARN)) \
         { \
            tornado::LogFileObject::instance().write("WARN", __FILE__, __FUNCTION__,  __LINE__, szFormat, ##args); \
         };
 
-#define LOG_DEBUG(szFormat, args...) \
+#define TORNADO_LOG_DEBUG(szFormat, args...) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::DEBUG)) \
         { \
            tornado::LogFileObject::instance().write("DEBUG", __FILE__, __FUNCTION__,  __LINE__, szFormat, ##args); \
@@ -94,26 +94,26 @@ private:
 
 
 
-#define LOG_INFO_STR(message) \
+#define TORNADO_LOG_INFO_STR(message) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::INFO)) \
         { \
             tornado::LogFileObject::instance().writeString("INFO", __FILE__, __FUNCTION__,  __LINE__, message); \
         };
 
-#define LOG_ERROR_STR(message) \
+#define TORNADO_LOG_ERROR_STR(message) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::ERROR)) \
         { \
            tornado::LogFileObject::instance().writeString("ERROR", __FILE__, __FUNCTION__,  __LINE__, message); \
         };
 
 
-#define LOG_WARN_STR(message) \
+#define TORNADO_LOG_WARN_STR(message) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::WARN)) \
         { \
            tornado::LogFileObject::instance().writeString("WARN", __FILE__, __FUNCTION__,  __LINE__, message); \
         };
 
-#define LOG_DEBUG_STR(message) \
+#define TORNADO_LOG_DEBUG_STR(message) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::DEBUG)) \
         { \
            tornado::LogFileObject::instance().writeString("DEBUG", __FILE__, __FUNCTION__,  __LINE__, message); \

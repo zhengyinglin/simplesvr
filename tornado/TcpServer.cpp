@@ -40,7 +40,7 @@ int TcpServer::listen(const std::string& host, uint16_t port)
     socket_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_ < 0)
     {
-        LOG_ERROR("create socket fail errno_str = %s", STR_ERRNO);
+        TORNADO_LOG_ERROR("create socket fail errno_str = %s", STR_ERRNO);
         return -1;
     }
     assert( 0 == SocketUtil::setTcpnodealy(socket_) );
@@ -63,13 +63,13 @@ int TcpServer::listen(const std::string& host, uint16_t port)
     
     if( ::bind(socket_, (struct sockaddr *)&addr, sizeof(addr) ) < 0 )
     {  
-        LOG_ERROR("socket bind faild errno_str = %s", STR_ERRNO);
+        TORNADO_LOG_ERROR("socket bind faild errno_str = %s", STR_ERRNO);
         return -1;
     }
     
     if(::listen(socket_, 128)<0)
     {  
-        LOG_ERROR("socket listen faild errno_str = %s", STR_ERRNO);
+        TORNADO_LOG_ERROR("socket listen faild errno_str = %s", STR_ERRNO);
         return -1;
     }
    
@@ -77,7 +77,7 @@ int TcpServer::listen(const std::string& host, uint16_t port)
         boost::bind(&TcpServer::handleConnection, this, _1, _2),
         IOLoop::READ);
 
-    LOG_INFO("socket(%d)listen and bind succ %s:%d", socket_, host.c_str(), port);
+    TORNADO_LOG_INFO("socket(%d)listen and bind succ %s:%d", socket_, host.c_str(), port);
 
     return 0;
 }
@@ -97,20 +97,20 @@ void TcpServer::handleConnection(int32_t socket, uint32_t events)
         { 
             if(ERRNO_WOULDBLOCK)
             {
-                LOG_INFO_STR("ERRNO_WOULDBLOCK do nothing");
+                TORNADO_LOG_INFO_STR("ERRNO_WOULDBLOCK do nothing");
                 return ;
             }
             if(ERRNO_ECONNABORTED)
             {
-                LOG_INFO_STR("ERRNO_WOULDBLOCK continue");
+                TORNADO_LOG_INFO_STR("ERRNO_WOULDBLOCK continue");
                 continue;
             }
-            LOG_ERROR("socket accept4 faild errno_str = %s", STR_ERRNO);
+            TORNADO_LOG_ERROR("socket accept4 faild errno_str = %s", STR_ERRNO);
             return ;
         }
         assert(fd >= IOLoop::MIN_FD );
 
-        LOG_INFO("socket(%d) accept|fd=%d|addr=%s|%d", socket_, fd, inet_ntoa(addr.sin_addr), addr.sin_port);        
+        TORNADO_LOG_INFO("socket(%d) accept|fd=%d|addr=%s|%d", socket_, fd, inet_ntoa(addr.sin_addr), addr.sin_port);        
         IOStreamPtr  stream(new IOStream(fd));
         handleStream(stream);
         break;

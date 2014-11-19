@@ -7,7 +7,7 @@
 #include "boost/interprocess/containers/set.hpp"
 #include "boost/interprocess/containers/map.hpp"
 #include "boost/interprocess/containers/string.hpp"
-
+#include <utility> //std::make_pair
 #include <string>
 #include <assert.h>
 
@@ -324,7 +324,8 @@ public:
         { 
             CharAllocator charAloc(ShmMap<KeyType, shm_string>::m_pSegment->get_segment_manager());
             shm_string  new_val(buff, size, charAloc);
-            ShmMap<KeyType, shm_string>::m_pMap->insert(std::make_pair<const KeyType, shm_string>(key, new_val));
+            //ShmMap<KeyType, shm_string>::m_pMap->insert(std::make_pair<const KeyType, shm_string>(key, new_val));
+            ShmMap<KeyType, shm_string>::m_pMap->insert(std::make_pair(key, new_val));
         }
         else
         {
@@ -381,7 +382,7 @@ public:
     
     inline void insert(const KeyType key, MappedType val)
     {
-         m_pMultiMap->insert( std::make_pair<const KeyType, MappedType>(key, val) );
+         m_pMultiMap->insert( std::make_pair(key, val) );
     }
 
     inline size_t erase(const KeyType& key)

@@ -29,7 +29,7 @@ class MainHandler : public RequestHandler
 public:
     virtual void get()
     {
-        LOG_INFO_STR("MainHandler");
+        TORNADO_LOG_INFO_STR("MainHandler");
         write("hello world");
         finish();
     }
@@ -48,12 +48,12 @@ public:
         request_timer_(0),
         callback_ ( cb )
     {
-        LOG_DEBUG_STR("------>MyTCP create");
+        TORNADO_LOG_DEBUG_STR("------>MyTCP create");
     }
 
-    ~MyTCP()
+    virtual ~MyTCP()
     {
-        LOG_DEBUG_STR("------>~MyTCP exit");
+        TORNADO_LOG_DEBUG_STR("------>~MyTCP exit");
     }
 
     bool connect(const char* ip, short port, int timeoutMS = 1000)
@@ -61,7 +61,7 @@ public:
         int socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (socket < 0)
         {
-            LOG_ERROR("create socket fail errno_str = %s", STR_ERRNO);
+            TORNADO_LOG_ERROR("create socket fail errno_str = %s", STR_ERRNO);
             return false;
         }
         stream_.reset( new IOStream(socket) );
@@ -76,11 +76,11 @@ public:
 
     virtual void connectDone(int err)
     {
-        LOG_DEBUG_STR("");  
+        TORNADO_LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
         if(err)
         {
-            LOG_ERROR_STR("connect socket fail");
+            TORNADO_LOG_ERROR_STR("connect socket fail");
             stream_->close();
             //will close in stream error  auto  //stream_->clear();
             return ;
@@ -94,7 +94,7 @@ public:
 
     virtual void onStreamClose()
     {
-        LOG_DEBUG_STR("");  
+        TORNADO_LOG_DEBUG_STR("");  
         //clear();
 
         if(callback_)
@@ -109,7 +109,7 @@ public:
 
     void writeDone()
     {
-        LOG_DEBUG_STR("");  
+       TORNADO_LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
         stream_->readBytes(400, boost::bind(&MyTCP::readDone, this, _1));
         request_timer_ = io_loop_->addTimeout(3000, boost::bind(&MyTCP::onRequestTimeout, shared_from_this(), _1, _2));
@@ -117,7 +117,7 @@ public:
     
     void readDone(const std::string& data)
     {
-        LOG_DEBUG_STR("");  
+        TORNADO_LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
         if(callback_)
         {
@@ -134,13 +134,13 @@ public:
   
     void onConnectTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN_STR("onConnectTimeout timeout  close stream_");
+        TORNADO_LOG_WARN_STR("onConnectTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
     void onRequestTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-         LOG_WARN_STR("onRequestTimeout timeout  close stream_");
+         TORNADO_LOG_WARN_STR("onRequestTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
@@ -165,7 +165,7 @@ public:
 
     virtual void get()
     {
-        LOG_INFO_STR("");
+        TORNADO_LOG_INFO_STR("");
        // MyTCPPtr  tcp_;
         tcp_.reset( new MyTCP( boost::bind(&ExampleHandler::getDone, GetSharedThis(), _1)  ) );
         tcp_->run();
@@ -173,7 +173,7 @@ public:
 
     void getDone(const std::string& data)
     {
-        LOG_INFO_STR("");
+        TORNADO_LOG_INFO_STR("");
         write("hello world recv");
         write(data);
         finish();
@@ -206,10 +206,10 @@ int main(int argc, char** argv)
         );
     if(sfd < 0)
     {
-        LOG_ERROR_STR("addSignalHandler failed");
+        TORNADO_LOG_ERROR_STR("addSignalHandler failed");
         return -1;
     }
-    LOG_INFO("addSignalHandler fd=%d", sfd);
+    TORNADO_LOG_INFO("addSignalHandler fd=%d", sfd);
 
     if( app.listen("", FLAGS_port) )//10.12.16.139
         return -1;

@@ -22,7 +22,7 @@ App::~App()
 
 void App::signal_handler(int32_t fd, uint32_t events)
 {  
-    LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
+    TORNADO_LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
     //must be remove 
     ioloop_->removeHandler(fd);
     stop();
@@ -35,10 +35,10 @@ void App::start()
         boost::bind(&App::signal_handler, this, _1, _2)  );
     if(sfd < 0)
     {
-        LOG_ERROR_STR("addSignalHandler failed");
+        TORNADO_LOG_ERROR_STR("addSignalHandler failed");
         return ;
     }
-    LOG_INFO("addSignalHandler fd=%d", sfd);
+    TORNADO_LOG_INFO("addSignalHandler fd=%d", sfd);
 
     running_ = true;
     tid_ = ioloop_->addTimeout(0, 
@@ -59,7 +59,7 @@ void App::stop()
 
 void App::runOneLoop(IOLoop::TimerID  tid, int64_t expiration)
 {
-    LOG_INFO_STR("");
+    TORNADO_LOG_INFO_STR("");
 
     if(running_ == false)
     {

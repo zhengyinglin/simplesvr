@@ -1,5 +1,4 @@
 #include "Buffer.h"
-#include "Logging.h"
 #include <assert.h>
 #include <algorithm>
 
@@ -14,14 +13,14 @@ Buffer::Buffer(size_t buff_len):
     write_index_(0)
 {    
     assert(buff_len_ > 0 && buff_len_ < 1024* 1024 * 10);
-    //buff_  = new char [buff_len_];
-    buff_  = BufferMemoryManager::instance()->get(buff_len_);
+    buff_  = new char [buff_len_];
+    //buff_  = BufferMemoryManager::instance()->get(buff_len_);
 }
 
 Buffer::~Buffer()
 {
-   //delete []buff_;
-   BufferMemoryManager::instance()->recover(buff_, buff_len_);
+   delete []buff_;
+   //BufferMemoryManager::instance()->recover(buff_, buff_len_);
 }
 
 void Buffer::clear()
@@ -67,14 +66,12 @@ bool Buffer::extendReadBytes(size_t  add_bytes)
 
 void Buffer::makeSpace()
 {
-    LOG_INFO("--makeSpace read_index_ = %zu write_index_=%zu", read_index_, write_index_);
     assert(write_index_ >= read_index_ );
 
     size_t readable = readableBytes();
     std::copy(begin(),  end(),  buff_);
     read_index_ = 0;
     write_index_ = readable;
-    LOG_INFO("--makeSpace read_index_ = %zu write_index_=%zu", read_index_, write_index_);
 }
 
 
@@ -108,7 +105,7 @@ int Buffer::find(const std::string& delimiter)
 
 
 
-  
+ /* 
 //=================Buffer 对象里面的buff_ 内存管理类
 
 BufferMemoryManager::~BufferMemoryManager()
@@ -162,7 +159,7 @@ BufferMemoryManager* BufferMemoryManager::instance()
     static BufferMemoryManager  _instance;
     return &_instance;
 }
-
+*/
 
 
 }//namespace tornado

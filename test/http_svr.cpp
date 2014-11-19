@@ -15,7 +15,7 @@
 void handler(tornado::HTTPConnectionPtr conn)
 {
     const tornado::HTTPRequest& request = conn->getRequset();
-    LOG_INFO("%s %s %s", request.method.c_str(), request.path.c_str(), request.query.c_str());
+    TORNADO_LOG_INFO("%s %s %s", request.method.c_str(), request.path.c_str(), request.query.c_str());
 
     conn->write("HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain; charset=utf-8\r\n"
@@ -58,7 +58,7 @@ void handler(tornado::HTTPConnectionPtr conn)
 void signal_handler(int32_t fd, uint32_t events)
 {
     tornado::IOLoop::instance()->removeHandler(fd);
-    LOG_WARN("Caught signal : will stop server fd=%d", fd);
+    TORNADO_LOG_WARN("Caught signal : will stop server fd=%d", fd);
     tornado::IOLoop::instance()->stop();
 }
 
@@ -66,7 +66,7 @@ void signal_handler_2(tornado::HTTPServer* svr, int32_t fd, uint32_t events)
 {
     //must be remove 
     tornado::IOLoop::instance()->removeHandler(fd);
-    LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
+    TORNADO_LOG_WARN("Caught signal : will stop server signal fd=%d", fd);
     svr->stop();
 }
 
@@ -90,10 +90,10 @@ int main(int argc, char** argv)
 
     if(sfd < 0)
     {
-        LOG_ERROR("addSignalHandler failed");
+        TORNADO_LOG_ERROR("addSignalHandler failed");
         return -1;
     }
-    LOG_INFO("addSignalHandler fd=%d", sfd);
+    TORNADO_LOG_INFO("addSignalHandler fd=%d", sfd);
 
     if( svr.listen("", FLAGS_port) )//
         return -1;

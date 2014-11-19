@@ -33,18 +33,18 @@ IOStream::IOStream(int32_t socket):
     SocketUtil::setNonblock(socket_);
     SocketUtil::setTcpnodealy(socket_);
     io_loop_ = IOLoop::instance();
-    LOG_DEBUG("--------->IOStream create  fd=%d", socket_);
+    TORNADO_LOG_DEBUG("--------->IOStream create  fd=%d", socket_);
 }
 
 IOStream::~IOStream()
 {
-    LOG_DEBUG("<---------IOStream release fd=%d", socket_);
+    TORNADO_LOG_DEBUG("<---------IOStream release fd=%d", socket_);
     this->close();
 }
 
 void IOStream::close()
 {
-    LOG_DEBUG("socket_=%d|closed_=%d", socket_, closed_);
+    TORNADO_LOG_DEBUG("socket_=%d|closed_=%d", socket_, closed_);
     if(closed_)
     {
         return ;
@@ -62,7 +62,7 @@ void IOStream::close()
             {
                 if( read_callback_ )
                 {
-                    LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
+                    TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
                     io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
                     read_callback_.clear();
                 }
@@ -78,10 +78,10 @@ void IOStream::close()
 
     assert(socket_ >= IOLoop::MIN_FD );
     ::close(socket_);
-    LOG_INFO("close socket fd =%d",  socket_);
+    TORNADO_LOG_INFO("close socket fd =%d",  socket_);
     if(close_callback_)
     {
-        LOG_INFO_STR("run close_callback put to ioloop callback");
+        TORNADO_LOG_INFO_STR("run close_callback put to ioloop callback");
         io_loop_->addCallback(close_callback_);
         close_callback_.clear();//release
     }
@@ -110,7 +110,7 @@ bool IOStream::connect(const char* ip, short port)
     {
        if ( !ERRNO_INPROGRESS && !ERRNO_WOULDBLOCK )
        {
-           LOG_ERROR("Connect error on fd:%d, strerron:%s", socket_, STR_ERRNO);
+           TORNADO_LOG_ERROR("Connect error on fd:%d, strerron:%s", socket_, STR_ERRNO);
            this->close();
            return false;
        }
@@ -144,7 +144,7 @@ int IOStream::writeBytes(const char* data, int len)
 
     if(false == write_buffer_.append(data, len) )
     { 
-        LOG_ERROR_STR("Reached maximum read buffer size");
+        TORNADO_LOG_ERROR_STR("Reached maximum read buffer size");
         this->close();
         return -3;
     }
@@ -153,7 +153,7 @@ int IOStream::writeBytes(const char* data, int len)
     {
         if( handleWrite())
         {
-            LOG_ERROR_STR("handleWrite failed");
+            TORNADO_LOG_ERROR_STR("handleWrite failed");
             this->close();
             return -4;
         }
@@ -188,7 +188,7 @@ int IOStream::justWriteBytesToBuff(const char* data, int len)
 
     if(false == write_buffer_.append(data, len) )
     { 
-        LOG_ERROR_STR("Reached maximum read buffer size");
+        TORNADO_LOG_ERROR_STR("Reached maximum read buffer size");
         this->close();
         return -3;
     }
@@ -211,12 +211,12 @@ int IOStream::readBytes(int num_bytes, ReadCallback callback)
         {
             if( callback )
             {   //read_callback_
-                LOG_INFO_STR("local have data run read_callback_ put to ioloop callback");
+                TORNADO_LOG_INFO_STR("local have data run read_callback_ put to ioloop callback");
                 io_loop_->addCallback( boost::bind(&inner_read_callback, callback, result) );
             }
             return 0;
         }
-        LOG_ERROR_STR("readBytesToString failed");
+        TORNADO_LOG_ERROR_STR("readBytesToString failed");
         return 1;
     }
 
@@ -226,7 +226,7 @@ int IOStream::readBytes(int num_bytes, ReadCallback callback)
 
     if( handleRead())
     {
-        LOG_ERROR_STR("handleRead failed");
+        TORNADO_LOG_ERROR_STR("handleRead failed");
         this->close();
         return -2;
     }
@@ -256,12 +256,12 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
         {
             if( callback )
             {   //read_callback_
-                LOG_INFO_STR("local have data run read_callback_ put to ioloop callback");
+                TORNADO_LOG_INFO_STR("local have data run read_callback_ put to ioloop callback");
                 io_loop_->addCallback( boost::bind(&inner_read_callback, callback, result) );
             }
             return 0;
         }
-        LOG_ERROR_STR("readBytesToString failed");
+        TORNADO_LOG_ERROR_STR("readBytesToString failed");
         return 1;
     }
 
@@ -270,7 +270,7 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
 
     if( handleRead() )
     {
-        LOG_ERROR_STR("handleRead failed");
+        TORNADO_LOG_ERROR_STR("handleRead failed");
         this->close();
         return -2;
     }
@@ -292,7 +292,7 @@ int IOStream::readUntilClose(ReadCallback callback)
 
     if( handleRead() )
     {
-        LOG_ERROR_STR("handleRead failed");
+        TORNADO_LOG_ERROR_STR("handleRead failed");
         this->close();
         return -1;
     }
@@ -308,7 +308,7 @@ void IOStream::addIOState(int state)
 {
     if(closed_)
     {
-        LOG_ERROR_STR("stream have closed");
+        TORNADO_LOG_ERROR_STR("stream have closed");
         return ;
     }
     if(state_ == 0)
@@ -328,10 +328,10 @@ void IOStream::addIOState(int state)
 
 void IOStream::handleEvents(int32_t fd, uint32_t events)
 {
-    LOG_DEBUG("fd %d|events %0x0x", fd, events);
+    TORNADO_LOG_DEBUG("fd %d|events %0x0x", fd, events);
     if(closed_)
     {
-        LOG_WARN("Got events for closed stream %d", fd);
+        TORNADO_LOG_WARN("Got events for closed stream %d", fd);
         return ;
     }
 
@@ -349,7 +349,7 @@ void IOStream::handleEvents(int32_t fd, uint32_t events)
     {
         if( handleRead())
         {
-            LOG_WARN("handleRead fail close fd=%d", fd);
+            TORNADO_LOG_WARN("handleRead fail close fd=%d", fd);
             this->close();
             return ;
         }
@@ -363,7 +363,7 @@ void IOStream::handleEvents(int32_t fd, uint32_t events)
     {
         if( handleWrite())
         {
-            LOG_WARN("handleWrite fail close fd=%d", fd);
+            TORNADO_LOG_WARN("handleWrite fail close fd=%d", fd);
             this->close();
             return ;
         }
@@ -375,7 +375,7 @@ void IOStream::handleEvents(int32_t fd, uint32_t events)
 
     if( events & IOLoop::ERROR )
     {
-        LOG_WARN("IOLoop::ERROR event close fd=%d", fd);
+        TORNADO_LOG_WARN("IOLoop::ERROR event close fd=%d", fd);
         this->close();
         return ;
     }
@@ -415,10 +415,10 @@ void IOStream::handleConnect()
 {
     if(SocketUtil::getSocketError(socket_))
     {
-        LOG_ERROR("connnect failed strerrno:%s", STR_ERRNO);
+        TORNADO_LOG_ERROR("connnect failed strerrno:%s", STR_ERRNO);
         if(connect_callback_)
         {
-            LOG_INFO_STR("run connect_callback_ put to ioloop callback");
+            TORNADO_LOG_INFO_STR("run connect_callback_ put to ioloop callback");
             io_loop_->addCallback( boost::bind(&inner_connect_callback,  connect_callback_, errno) );
             connect_callback_.clear();
         }
@@ -427,12 +427,12 @@ void IOStream::handleConnect()
     }
     if( connect_callback_ )
     {
-        LOG_INFO_STR("run connect_callback_ put to ioloop callback");
+        TORNADO_LOG_INFO_STR("run connect_callback_ put to ioloop callback");
         io_loop_->addCallback( boost::bind(&inner_connect_callback,  connect_callback_, 0) );
         connect_callback_.clear();
     }
     connecting_ = false;
-    LOG_INFO_STR("connnect succ");
+    TORNADO_LOG_INFO_STR("connnect succ");
 }
 
 bool IOStream::reading()
@@ -452,7 +452,7 @@ int IOStream::handleRead()
     {
         return -1;
     }
-    LOG_DEBUG("read_bytes_ %zu readbytes: %zu", read_bytes_, read_buffer_.readableBytes());
+    TORNADO_LOG_DEBUG("read_bytes_ %zu readbytes: %zu", read_bytes_, read_buffer_.readableBytes());
     if (read_bytes_ > 0 && read_buffer_.readableBytes() >= read_bytes_)
     {
         StringPtr result(new std::string);
@@ -461,13 +461,13 @@ int IOStream::handleRead()
             read_bytes_ = 0;
             if( read_callback_ )
             {
-                LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
+                TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
                 io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
                 read_callback_.clear(); 
             }
             return 0;
         }
-        LOG_ERROR_STR("-------------- readBytesToString faile");
+        TORNADO_LOG_ERROR_STR("-------------- readBytesToString faile");
         return -1;
     }
     else if( !read_delimiter_.empty() )
@@ -482,13 +482,13 @@ int IOStream::handleRead()
                 read_delimiter_.clear();
                 if( read_callback_ )
                 {
-                    LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
+                    TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
                     io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
                     read_callback_.clear();
                 }
                 return 0;
             }
-            LOG_ERROR_STR("-------------- readBytesToString faile");
+            TORNADO_LOG_ERROR_STR("-------------- readBytesToString faile");
             return 1;
         }
     }
@@ -502,16 +502,16 @@ int IOStream::handleRead()
             {
                 if( read_callback_ )
                 {
-                    LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
+                    TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
                     io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
                 }
                 else
                 {
-                    LOG_WARN_STR("read_until_close_ but read_callback_ is emtpy");
+                    TORNADO_LOG_WARN_STR("read_until_close_ but read_callback_ is emtpy");
                 }
                 return 0;
             }
-            LOG_ERROR_STR("-------------- readBytesToString faile");
+            TORNADO_LOG_ERROR_STR("-------------- readBytesToString faile");
             return -1;
         }    
     }
@@ -551,17 +551,17 @@ int IOStream::readToBuffer()
 {
     if(!read_buffer_.ensureWritableBytes( READ_CHUNK_SIZE ) )
     {
-        LOG_ERROR_STR("read_buffer_ ensureWritableBytes failed Reached maximum read buffer size");
+        TORNADO_LOG_ERROR_STR("read_buffer_ ensureWritableBytes failed Reached maximum read buffer size");
         return -1;
     }
 
     int bytesize = read(socket_, read_buffer_.data(), READ_CHUNK_SIZE);
 
-    LOG_DEBUG("try read and read bytesize %d", bytesize);
+    TORNADO_LOG_DEBUG("try read and read bytesize %d", bytesize);
     
     if( bytesize == 0 )
     {
-        LOG_WARN_STR("read bytesize is 0");
+        TORNADO_LOG_WARN_STR("read bytesize is 0");
         //close out 
         return -2;
     }
@@ -570,14 +570,14 @@ int IOStream::readToBuffer()
     {
         if(ERRNO_WOULDBLOCK)
             return 0;
-        LOG_WARN("read bytesize  %d  < 0 strerron:%s", bytesize, STR_ERRNO);
+        TORNADO_LOG_WARN("read bytesize  %d  < 0 strerron:%s", bytesize, STR_ERRNO);
         //close out 
         return -3;
     }
   
     if(false == read_buffer_.extendReadBytes(bytesize) )
     {
-        LOG_ERROR_STR("Reached maximum read buffer size");
+        TORNADO_LOG_ERROR_STR("Reached maximum read buffer size");
         return -4;
     }
 
@@ -588,13 +588,13 @@ int IOStream::readToBuffer()
 
 int IOStream::handleWrite()
 {
-    LOG_DEBUG_STR("");
+    TORNADO_LOG_DEBUG_STR("");
     size_t  writebytes = write_buffer_.readableBytes();
     while( writebytes > 0 )
     {
         int chunk_size = std::min( (size_t)WRITE_CHUNK_SIZE, writebytes );
         int num_bytes = write(socket_, write_buffer_.data(), chunk_size ); 
-        LOG_DEBUG("write num_bytes=%d", num_bytes);
+        TORNADO_LOG_DEBUG("write num_bytes=%d", num_bytes);
         if (num_bytes > 0)
         {
             if( !write_buffer_.readBytes( num_bytes ) )
@@ -619,7 +619,7 @@ int IOStream::handleWrite()
                 //    gen_log.warning("Write error on %s: %s",
                 //                    self.fileno(), e)
             }
-            LOG_WARN("write writebytes %d < 0 strerron:%s", num_bytes, STR_ERRNO);
+            TORNADO_LOG_WARN("write writebytes %d < 0 strerron:%s", num_bytes, STR_ERRNO);
             return -1;
         }
     }
@@ -627,7 +627,7 @@ int IOStream::handleWrite()
     {
         if(write_callback_)
         {
-            LOG_DEBUG_STR("write done run write_callback_ on ioloop callback");
+            TORNADO_LOG_DEBUG_STR("write done run write_callback_ on ioloop callback");
             io_loop_->addCallback(write_callback_);
             write_callback_.clear();//release
         }

@@ -6,6 +6,8 @@ PROJECT(${SERVER_NAME})
 
 set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall -g -std=c++0x -O2")
 
+#remove boost sth warning for clang building
+set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -74,7 +76,7 @@ TARGET_LINK_LIBRARIES(http_svr_2
 
 
 ADD_EXECUTABLE(test_shm
-					test_base
+					test_shm
 			   )
 
 TARGET_LINK_LIBRARIES(test_shm
@@ -83,3 +85,10 @@ TARGET_LINK_LIBRARIES(test_shm
 	rt
 )
 
+ADD_EXECUTABLE(test_util
+					test_util
+			   )
+
+TARGET_LINK_LIBRARIES(test_util
+	${TORNADO}/tornado/build/lib/libtornado.a
+)

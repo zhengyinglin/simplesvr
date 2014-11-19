@@ -24,12 +24,12 @@ public:
         loopnum_(1),
         curnum_(0)
     {
-        LOG_DEBUG_STR("------>TcpClient create");
+        TORNADO_LOG_DEBUG_STR("------>TcpClient create");
     }
 
-    ~TcpClient()
+    virtual ~TcpClient()
     {
-        LOG_DEBUG_STR("<------~TcpClient exit");
+        TORNADO_LOG_DEBUG_STR("<------~TcpClient exit");
     }
 
     bool connect(const char* ip, short port, int timeoutMS = 1000)
@@ -37,7 +37,7 @@ public:
         int socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (socket < 0)
         {
-            LOG_ERROR("create socket fail errno_str =%s", STR_ERRNO);
+            TORNADO_LOG_ERROR("create socket fail errno_str =%s", STR_ERRNO);
             return false;
         }
         stream_.reset( new IOStream(socket) );
@@ -52,11 +52,11 @@ public:
 
     virtual void connectDone(int err)
     {
-        LOG_DEBUG_STR("")  
+        TORNADO_LOG_DEBUG_STR("")  
         io_loop_->removeTimeout(request_timer_);
         if(err)
         {
-            LOG_ERROR("connect socket fail");
+            TORNADO_LOG_ERROR("connect socket fail");
             //stream_->close();
             //will close in stream error  auto  //stream_->clear();
             return ;
@@ -66,7 +66,7 @@ public:
 
     virtual void onStreamClose()
     {
-        LOG_DEBUG_STR("")
+        TORNADO_LOG_DEBUG_STR("")
         /*if(callback_)
         {
             callback_.clear();
@@ -89,7 +89,7 @@ public:
 
     void writeDone()
     {
-        LOG_DEBUG_STR("")  
+        TORNADO_LOG_DEBUG_STR("")  
         io_loop_->removeTimeout(request_timer_);
         stream_->readBytes(400, boost::bind(&TcpClient::readDone, shared_from_this(), _1));
         request_timer_ = io_loop_->addTimeout(3000, boost::bind(&TcpClient::onRequestTimeout, shared_from_this(), _1, _2));
@@ -98,19 +98,19 @@ public:
     void readDone(const std::string& data)
     {
         io_loop_->removeTimeout(request_timer_);
-        LOG_INFO_STR("PKG Done")
+        TORNADO_LOG_INFO_STR("PKG Done")
         sendRequest();
     }
   
     void onConnectTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN_STR("onConnectTimeout timeout  close stream_");
+        TORNADO_LOG_WARN_STR("onConnectTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
     void onRequestTimeout(IOLoop::TimerID tid, int64_t expiration)
     {
-        LOG_WARN_STR("onRequestTimeout timeout  close stream_");
+        TORNADO_LOG_WARN_STR("onRequestTimeout timeout  close stream_");
         assert(tid == request_timer_);
         stream_->close();
     }
