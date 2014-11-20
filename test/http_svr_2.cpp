@@ -40,7 +40,7 @@ public:
 };
 
 
-class MyTCP : public boost::enable_shared_from_this<MyTCP>
+class MyTCP : public std::enable_shared_from_this<MyTCP>
 {
 public:
     MyTCP(IOStream::ReadCallback  cb):
@@ -66,12 +66,13 @@ public:
         }
         stream_.reset( new IOStream(socket) );
         //set close callback
-        stream_->setCloseCallback(boost::bind(&MyTCP::onStreamClose, shared_from_this()) );
+        stream_->setCloseCallback(std::bind(&MyTCP::onStreamClose, shared_from_this()) );
 
         //1秒超时
-        request_timer_ = io_loop_->addTimeout(timeoutMS, boost::bind(&MyTCP::onConnectTimeout, shared_from_this(), _1, _2));
+        request_timer_ = io_loop_->addTimeout(timeoutMS, std::bind(&MyTCP::onConnectTimeout, shared_from_this(), 
+            std::placeholders::_1, std::placeholders::_2));
 
-        return stream_->connect(ip, port, boost::bind(&MyTCP::connectDone, shared_from_this(), _1) );
+        return stream_->connect(ip, port, std::bind(&MyTCP::connectDone, shared_from_this(), std::placeholders::_1) );
     }
 
     virtual void connectDone(int err)
@@ -87,9 +88,10 @@ public:
         }
         char szbuff[400];
         memset(szbuff, 0xFF, sizeof(szbuff));
-        stream_->writeBytes(szbuff, 400, boost::bind(&MyTCP::writeDone, this));
+        stream_->writeBytes(szbuff, 400, std::bind(&MyTCP::writeDone, this));
 
-        request_timer_ = io_loop_->addTimeout(3000, boost::bind(&MyTCP::onRequestTimeout, shared_from_this(), _1, _2));
+        request_timer_ = io_loop_->addTimeout(3000, std::bind(&MyTCP::onRequestTimeout, shared_from_this(), 
+            std::placeholders::_1, std::placeholders::_2));
     }
 
     virtual void onStreamClose()
@@ -99,7 +101,7 @@ public:
 
         if(callback_)
         {
-            callback_.clear();
+            callback_ = nullptr;
         }
         /*if(stream_)
         {
@@ -111,8 +113,9 @@ public:
     {
        TORNADO_LOG_DEBUG_STR("");  
         io_loop_->removeTimeout(request_timer_);
-        stream_->readBytes(400, boost::bind(&MyTCP::readDone, this, _1));
-        request_timer_ = io_loop_->addTimeout(3000, boost::bind(&MyTCP::onRequestTimeout, shared_from_this(), _1, _2));
+        stream_->readBytes(400, std::bind(&MyTCP::readDone, this, std::placeholders::_1));
+        request_timer_ = io_loop_->addTimeout(3000, std::bind(&MyTCP::onRequestTimeout, shared_from_this(), 
+            std::placeholders::_1, std::placeholders::_2));
     }
     
     void readDone(const std::string& data)
@@ -151,23 +154,23 @@ private:
     IOStream::ReadCallback  callback_;
     IOStreamPtr      stream_;
 };
-typedef boost::shared_ptr<MyTCP> MyTCPPtr;
+typedef std::shared_ptr<MyTCP> MyTCPPtr;
 
 
 
 class ExampleHandler : public RequestHandler
 {
 public:
-    boost::shared_ptr<ExampleHandler> GetSharedThis() 
+    std::shared_ptr<ExampleHandler> GetSharedThis() 
     { 
-       return boost::dynamic_pointer_cast<ExampleHandler>( shared_from_this() ); 
+       return std::dynamic_pointer_cast<ExampleHandler>( shared_from_this() ); 
     } 
 
     virtual void get()
     {
         TORNADO_LOG_INFO_STR("");
        // MyTCPPtr  tcp_;
-        tcp_.reset( new MyTCP( boost::bind(&ExampleHandler::getDone, GetSharedThis(), _1)  ) );
+        tcp_.reset( new MyTCP( std::bind(&ExampleHandler::getDone, GetSharedThis(), std::placeholders::_1)  ) );
         tcp_->run();
     }
 
@@ -202,7 +205,7 @@ int main(int argc, char** argv)
     tornado::Application app( process );
 
     int32_t sfd = tornado::IOLoop::instance()->addSignalHandler(SIGTERM, 
-        boost::bind(&tornado::Application::signal_handler_stop, &app, _1, _2)
+        std::bind(&tornado::Application::signal_handler_stop, &app, std::placeholders::_1, std::placeholders::_2)
         );
     if(sfd < 0)
     {

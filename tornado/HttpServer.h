@@ -10,12 +10,9 @@
 
 #include <map>
 #include <string>
-#include "boost/function.hpp"
-#include "boost/shared_ptr.hpp"
-#include "boost/enable_shared_from_this.hpp"
+#include <memory>
 #include "IOStream.h"
 #include "TcpServer.h"
-
 
 namespace tornado
 {
@@ -79,11 +76,11 @@ struct HTTPRequest
 
 
 class HTTPConnection;
-typedef boost::shared_ptr<HTTPConnection> HTTPConnectionPtr;
-typedef boost::function<void(HTTPConnectionPtr)> HttpRequestCallback;
+typedef std::shared_ptr<HTTPConnection> HTTPConnectionPtr;
+typedef std::function<void(HTTPConnectionPtr)> HttpRequestCallback;
 
 //"""Handles a connection to an HTTP client, executing HTTP requests.
-class HTTPConnection : public boost::enable_shared_from_this<HTTPConnection>
+class HTTPConnection : public std::enable_shared_from_this<HTTPConnection>
 {
 public:
    HTTPConnection(IOStreamPtr& stream, HttpRequestCallback& request_callback);
@@ -108,7 +105,7 @@ private:
    int parseQsBytes(const std::string& qs, std::map<std::string, std::string>& arguments);
 public:
    const HTTPRequest& getRequset() const { return request_; }
-   void  setCloseCallback(IOLoop::Callback callback) { close_callback_ = callback; }
+   void  setCloseCallback(IOLoop::Callback&& callback) { close_callback_ = callback; }
    int64_t  getRequestTimeMS() const ;
 
 private:
@@ -126,7 +123,7 @@ private:
 class HTTPServer : public TcpServer
 {
 public:
-    HTTPServer(HttpRequestCallback  callback);
+    HTTPServer(HttpRequestCallback&& callback);
     virtual ~HTTPServer()
     {}
 

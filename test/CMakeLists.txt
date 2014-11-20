@@ -4,7 +4,7 @@ SET(SERVER_NAME svr)
 PROJECT(${SERVER_NAME})
 
 
-set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall -g -std=c++0x -O2")
+set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11 -O2")
 
 #remove boost sth warning for clang building
 set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")

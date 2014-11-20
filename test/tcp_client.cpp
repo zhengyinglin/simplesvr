@@ -7,15 +7,12 @@
 
 #include "tornado/Logging.h"
 #include "tornado/IOStream.h"
-#include "boost/enable_shared_from_this.hpp"
-#include "boost/shared_ptr.hpp"
-#include "boost/bind.hpp"
 #include "tornado/Util.h"
 
 namespace tornado
 {
 
-class TcpClient : public boost::enable_shared_from_this<TcpClient>
+class TcpClient : public std::enable_shared_from_this<TcpClient>
 {
 public:
     TcpClient():
@@ -42,12 +39,13 @@ public:
         }
         stream_.reset( new IOStream(socket) );
         //set close callback
-        stream_->setCloseCallback(boost::bind(&TcpClient::onStreamClose, shared_from_this()) );
+        stream_->setCloseCallback(std::bind(&TcpClient::onStreamClose, shared_from_this()) );
 
         //1秒超时
-        request_timer_ = io_loop_->addTimeout(timeoutMS, boost::bind(&TcpClient::onConnectTimeout, shared_from_this(), _1, _2));
+        request_timer_ = io_loop_->addTimeout(timeoutMS, std::bind(&TcpClient::onConnectTimeout, shared_from_this(), 
+            std::placeholders::_1, std::placeholders::_2));
 
-        return stream_->connect(ip, port, boost::bind(&TcpClient::connectDone, shared_from_this(), _1) );
+        return stream_->connect(ip, port, std::bind(&TcpClient::connectDone, shared_from_this(), std::placeholders::_1) );
     }
 
     virtual void connectDone(int err)
@@ -83,16 +81,18 @@ public:
         }
         char szbuff[400];
         memset(szbuff, 0xFF, sizeof(szbuff));
-        stream_->writeBytes(szbuff, 400, boost::bind(&TcpClient::writeDone, shared_from_this()));
-        request_timer_ = io_loop_->addTimeout(3000, boost::bind(&TcpClient::onRequestTimeout, shared_from_this(), _1, _2));
+        stream_->writeBytes(szbuff, 400, std::bind(&TcpClient::writeDone, shared_from_this()));
+        request_timer_ = io_loop_->addTimeout(3000, std::bind(&TcpClient::onRequestTimeout, shared_from_this(),
+            std::placeholders::_1, std::placeholders::_2));
     }
 
     void writeDone()
     {
         TORNADO_LOG_DEBUG_STR("")  
         io_loop_->removeTimeout(request_timer_);
-        stream_->readBytes(400, boost::bind(&TcpClient::readDone, shared_from_this(), _1));
-        request_timer_ = io_loop_->addTimeout(3000, boost::bind(&TcpClient::onRequestTimeout, shared_from_this(), _1, _2));
+        stream_->readBytes(400, std::bind(&TcpClient::readDone, shared_from_this(), std::placeholders::_1));
+        request_timer_ = io_loop_->addTimeout(3000, std::bind(&TcpClient::onRequestTimeout, shared_from_this(),
+            std::placeholders::_1, std::placeholders::_2));
     }
     
     void readDone(const std::string& data)
@@ -130,7 +130,7 @@ private:
     /*IOStream::ReadCallback  callback_;*/
 };
 
-typedef boost::shared_ptr<TcpClient> TcpClientPtr;
+typedef std::shared_ptr<TcpClient> TcpClientPtr;
 
 
 }
@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
     tornado::TcpClientPtr tcp(new tornado::TcpClient());
 
     tornado::IOLoop::instance()->addCallback( 
-        boost::bind(&tornado::TcpClient::run, tcp, 
+        std::bind(&tornado::TcpClient::run, tcp, 
                 FLAGS_ip, FLAGS_port, FLAGS_pkgnum) );
     tornado::IOLoop::instance()->start(); 
     return 0;

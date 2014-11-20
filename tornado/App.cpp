@@ -2,7 +2,6 @@
 #include <signal.h>
 #include <assert.h>
 #include "Logging.h"
-#include "boost/bind.hpp"
 
 
 namespace tornado
@@ -32,7 +31,7 @@ void App::start()
 {
     assert( !running_  );
     int32_t sfd = ioloop_->addSignalHandler(SIGTERM, 
-        boost::bind(&App::signal_handler, this, _1, _2)  );
+        std::bind(&App::signal_handler, this, std::placeholders::_1, std::placeholders::_2)  );
     if(sfd < 0)
     {
         TORNADO_LOG_ERROR_STR("addSignalHandler failed");
@@ -42,7 +41,7 @@ void App::start()
 
     running_ = true;
     tid_ = ioloop_->addTimeout(0, 
-        boost::bind(&App::runOneLoop, this, _1, _2) );
+        std::bind(&App::runOneLoop, this, std::placeholders::_1, std::placeholders::_2) );
 
     ioloop_->start(); 
 }
@@ -70,7 +69,7 @@ void App::runOneLoop(IOLoop::TimerID  tid, int64_t expiration)
 
     //run again
     tid_ = ioloop_->addTimeout(delayMs, 
-        boost::bind(&App::runOneLoop, this, _1, _2) );
+        std::bind(&App::runOneLoop, this, std::placeholders::_1, std::placeholders::_2) );
 }
 
 

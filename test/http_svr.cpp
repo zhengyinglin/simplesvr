@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 
     int32_t sfd = tornado::IOLoop::instance()->addSignalHandler(SIGTERM, 
         //&signal_handler
-        boost::bind(&signal_handler_2, &svr, _1, _2)
+        std::bind(&signal_handler_2, &svr, std::placeholders::_1, std::placeholders::_2)
         );
 
     if(sfd < 0)

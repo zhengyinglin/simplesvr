@@ -2,7 +2,6 @@
 #include "IOLoop.h"
 #include "Util.h"
 #include "Logging.h"
-#include "boost/bind.hpp"
 
 namespace tornado
 {
@@ -74,7 +73,7 @@ int TcpServer::listen(const std::string& host, uint16_t port)
     }
    
     io_loop_->addHandler(socket_, 
-        boost::bind(&TcpServer::handleConnection, this, _1, _2),
+        std::bind(&TcpServer::handleConnection, this, std::placeholders::_1, std::placeholders::_2),
         IOLoop::READ);
 
     TORNADO_LOG_INFO("socket(%d)listen and bind succ %s:%d", socket_, host.c_str(), port);

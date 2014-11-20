@@ -88,14 +88,14 @@ int HTTPHeaders::parseCookies()
     std::vector<std::string> vItems;
     boost::split(vItems, cookies_buff, boost::is_any_of(";"));
     std::vector<std::string> vArgs;
-    for(auto iter=vItems.begin(); iter != vItems.end(); ++iter)
+    for(auto& item : vItems)
     {
         vArgs.clear();
-        boost::algorithm::trim( *iter ) ;
-        boost::split(vArgs, *iter, boost::is_any_of("="));
+        boost::algorithm::trim( item ) ;
+        boost::split(vArgs, item, boost::is_any_of("="));
         if(vArgs.size() != 2)
         {
-            TORNADO_LOG_WARN("%s num %zu!= 2", iter->c_str(), vArgs.size() );
+            TORNADO_LOG_WARN("%s num %zu!= 2", item.c_str(), vArgs.size() );
             return -1;
         }
         cookies_[ vArgs[0] ] = vArgs[1]; 
@@ -129,15 +129,15 @@ int HTTPHeaders::getValueInt(const std::string& key) const
 
 void HTTPHeaders::print() const 
 {
-    for(auto iter = headers_.begin(); iter != headers_.end(); ++iter)
+    for(auto& item : headers_)
     {
-        printf("[%s]:[%s]\n", iter->first.c_str(), iter->second.c_str());
+        printf("[%s]:[%s]\n", item.first.c_str(), item.second.c_str());
     }
     printf(".....cookies.....\n");
     
-    for(auto iter = cookies_.begin(); iter != cookies_.end(); ++iter)
+    for(auto& item : headers_)
     {
-        printf("cookies\t\t[%s]:[%s]\n", iter->first.c_str(), iter->second.c_str());
+        printf("cookies\t\t[%s]:[%s]\n", item.first.c_str(), item.second.c_str());
     }
 }
  
@@ -163,15 +163,15 @@ void HTTPConnection::onStreamColse()
     if(close_callback_)
     {
         close_callback_();
-        close_callback_.clear();
+        close_callback_ = nullptr;
     }
 }
 
 void HTTPConnection::startRun()
 {
-    stream_->setCloseCallback( boost::bind(&HTTPConnection::onStreamColse, shared_from_this()));
+    stream_->setCloseCallback( std::bind(&HTTPConnection::onStreamColse, shared_from_this()));
 
-    int iRet = stream_->readUntil("\r\n\r\n", boost::bind(&HTTPConnection::onHeaders, shared_from_this(), _1) );
+    int iRet = stream_->readUntil("\r\n\r\n", std::bind(&HTTPConnection::onHeaders, shared_from_this(), std::placeholders::_1) );
     if(iRet)
     {
         TORNADO_LOG_WARN("read_until fail ret=%d", iRet);
@@ -202,7 +202,7 @@ void HTTPConnection::onHeaders(const std::string& data)
          {
              stream_->writeBytes("HTTP/1.1 100 (Continue)\r\n\r\n");
          }
-         stream_->readBytes(content_length, boost::bind(&HTTPConnection::onRequestBody, shared_from_this(), _1));
+         stream_->readBytes(content_length, std::bind(&HTTPConnection::onRequestBody, shared_from_this(), std::placeholders::_1));
          return;
     }
     TORNADO_LOG_DEBUG_STR("Content-Length 0 run callback");
@@ -317,10 +317,10 @@ int HTTPConnection::parseQsBytes(const std::string& qs, std::map<std::string, st
     std::vector<std::string> vItems;
     boost::split(vItems, qs, boost::is_any_of("&"));
     std::vector<std::string> vArgs;
-    for(auto iter=vItems.begin(); iter != vItems.end(); ++iter)
+    for(auto& item : vItems)
     {
         vArgs.clear();
-        boost::split(vArgs, *iter, boost::is_any_of("="));
+        boost::split(vArgs, item, boost::is_any_of("="));
        
         if(vArgs.size() != 2)
         {
@@ -355,7 +355,7 @@ int64_t  HTTPConnection::getRequestTimeMS() const
 
 int HTTPConnection::write(const std::string& chunk)
 {
-    return stream_->writeBytes(chunk.c_str(), chunk.size(),  boost::bind(&HTTPConnection::onWriteComplete, this) );
+    return stream_->writeBytes(chunk.c_str(), chunk.size(),  std::bind(&HTTPConnection::onWriteComplete, this) );
 }
 
 int HTTPConnection::writeToBuff(const char* chunk, size_t len)
@@ -379,7 +379,7 @@ void HTTPConnection::onWriteComplete()
 
 
 //===================  HTTPServer =========================
-HTTPServer::HTTPServer(HttpRequestCallback  callback):
+HTTPServer::HTTPServer(HttpRequestCallback&& callback):
     TcpServer(),
     callback_(callback)
 {

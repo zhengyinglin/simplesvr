@@ -9,7 +9,6 @@
 #define _TORNADO_WEB_H_
 #include <string>
 #include <time.h>
-#include "boost/function.hpp"
 #include "HttpServer.h"
 
 
@@ -37,7 +36,7 @@ private:
 
 
 //PPORTED_METHODS = ("GET", "HEAD", "POST", "PATCH", "PUT", "OPTIONS")
-class RequestHandler : public boost::enable_shared_from_this<RequestHandler>
+class RequestHandler : public std::enable_shared_from_this<RequestHandler>
 {
 public:
     RequestHandler();

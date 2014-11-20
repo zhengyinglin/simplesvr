@@ -60,9 +60,9 @@ int64_t TimeoutQueue::runInternal(int64_t now, bool onceOnly) {
     //}
 
     // Call callbacks
-    for (auto iter = expired.begin(); iter != expired.end(); ++iter)
+    for (auto& event : expired)
     {
-      iter->callback(iter->id, now);
+        event.callback(event.id, now);
     }
     nextExp = nextExpiration();
   } while (!onceOnly && nextExp <= now);

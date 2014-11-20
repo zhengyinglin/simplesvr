@@ -30,9 +30,9 @@ void test_vector()
         StringShmVector  shmvec(MyMemName, 1024 * 100);
         auto  pVec = shmvec.get_vecotr();
 
-        for(auto iter=pVec->begin(); iter != pVec->end(); ++iter)
+        for(auto& item : *pVec )
         {
-            std::cout << *iter << std::endl;
+            std::cout << item << std::endl;
         } 
     }
 }
@@ -70,10 +70,9 @@ void test_set()
     {
         StringShmSet  shmset2(MyMemName, 1024 * 100);
         auto  pSet = shmset2.get_set();
-
-        for(auto iter=pSet->begin(); iter != pSet->end(); ++iter)
+        for(auto& item : *pSet )
         {
-            std::cout << *iter << std::endl;
+            std::cout << item << std::endl;
         } 
     }
 }
@@ -108,10 +107,9 @@ void test_map()
     {
         Mymap  shmmap(MyMemName, 1024 * 100);
         Mymap::Map*  pMap = shmmap.get_map();
-
-        for(auto iter=pMap->begin(); iter != pMap->end(); ++iter)
+        for(auto& item : *pMap )
         {
-            std::cout << iter->first << "  " <<iter->second << std::endl;
+            std::cout << item.first << "  " <<item.second << std::endl;
         } 
     }
 }
@@ -145,10 +143,10 @@ void test_multimap()
         Mymap  shmmap(MyMemName, 1024 * 100);
         Mymap::MultiMap*  pMap = shmmap.get_map();
 
-        for(auto iter=pMap->begin(); iter != pMap->end(); ++iter)
+        for(auto& item : *pMap )
         {
-            std::cout << iter->first << "  " <<iter->second << std::endl;
-        } 
+            std::cout << item.first << "  " <<item.second << std::endl;
+        }
 
         auto end = pMap->lower_bound(99);
         for(auto iter=pMap->begin(); iter != end; ++iter)
@@ -158,10 +156,10 @@ void test_multimap()
       
         pMap->erase(pMap->begin(), end);
 
-        for(auto iter=pMap->begin(); iter != pMap->end(); ++iter)
+        for(auto& item : *pMap )
         {
-            std::cout << iter->first << "  " <<iter->second << std::endl;
-        } 
+            std::cout << item.first << "  " <<item.second << std::endl;
+        }
 
     }
 }

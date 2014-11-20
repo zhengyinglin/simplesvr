@@ -19,7 +19,7 @@ IOLoop::~IOLoop()
 {
 }
 
-int IOLoop::addHandler(int32_t fd, HandlerCallback handler, uint32_t events)
+int IOLoop::addHandler(int32_t fd, HandlerCallback&& handler, uint32_t events)
 {  
     if( fd < MIN_FD || fd >= (int)handlers_.size() )
     {
@@ -76,7 +76,7 @@ int IOLoop::removeHandler(int32_t fd)
     --handle_num_;
 
     handlers_[fd].fd = -1;
-    handlers_[fd].cb.clear();
+    handlers_[fd].cb = nullptr;
     int result = impl_.unregisterFD(fd);
     if(result)
     {
@@ -86,7 +86,7 @@ int IOLoop::removeHandler(int32_t fd)
 }
 
 
-int32_t IOLoop::addSignalHandler(int signum, HandlerCallback handler)
+int32_t IOLoop::addSignalHandler(int signum, HandlerCallback&& handler)
 {
     sigset_t mask;
     sigemptyset(&mask);
@@ -105,7 +105,7 @@ int32_t IOLoop::addSignalHandler(int signum, HandlerCallback handler)
         return sfd;
     }
 
-    if( addHandler(sfd, handler, IOLoop::READ) )
+    if( addHandler(sfd, std::move(handler), IOLoop::READ) )
     {
         TORNADO_LOG_ERROR("addHandler faild sfd=%d", sfd);  
         removeHandler(sfd);
@@ -135,9 +135,9 @@ int IOLoop::start()
              std::vector<Callback>  callbacks;
              callbacks.swap( callbacks_ );
              TORNADO_LOG_DEBUG("IOLoop run callbacks size = %zu", callbacks.size());
-             for(auto iter = callbacks.begin(); iter != callbacks.end(); ++iter)
+             for(auto& cb : callbacks)
              {
-                (*iter)();
+                cb();
              }
          }
 
@@ -207,7 +207,7 @@ int IOLoop::stop()
 }
 
 
-IOLoop::TimerID  IOLoop::addTimeout(int delayMS, TimeCallback callback)
+IOLoop::TimerID  IOLoop::addTimeout(int delayMS, TimeCallback&& callback)
 {
     return timeouts_.add(TimeUtil::curTimeMS(), delayMS, callback);
 }
@@ -218,7 +218,7 @@ bool IOLoop::removeTimeout(TimerID  id)
 }
 
 
-void IOLoop::addCallback(Callback callback)
+void IOLoop::addCallback(Callback&& callback)
 {
     callbacks_.push_back(std::move(callback));
 }

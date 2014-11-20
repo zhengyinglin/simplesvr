@@ -9,7 +9,6 @@
 #include <vector>
 #include "EPoll.h"
 #include "TimeoutQueue.h"
-#include "boost/function.hpp"
 
 
 namespace tornado
@@ -26,14 +25,15 @@ public:
 
     typedef folly::TimeoutQueue::Id  TimerID;
     typedef folly::TimeoutQueue::Callback  TimeCallback;
-    typedef boost::function<void(int32_t, uint32_t)> HandlerCallback;
-    typedef boost::function<void()> Callback;
+    typedef std::function<void(int32_t, uint32_t)> HandlerCallback;
+    typedef std::function<void()> Callback;
     struct STHander
     {
         int32_t  fd;
         HandlerCallback  cb;
         STHander():
-            fd(-1)
+            fd(-1),
+            cb(nullptr)
         {}
     };
 
@@ -51,23 +51,23 @@ public:
 
     inline size_t getMaxFd() const {return handlers_.size();}
 
-    int addHandler(int32_t fd, HandlerCallback handler, uint32_t events);
+    int addHandler(int32_t fd, HandlerCallback&& handler, uint32_t events);
     
     int updateHandler(int32_t fd, uint32_t events);
    
     int removeHandler(int32_t fd);
 
     //int32_t addSignalHandler(int signum = SIGTERM, HandlerCallback handler);
-    int32_t addSignalHandler(int signum, HandlerCallback handler);
+    int32_t addSignalHandler(int signum, HandlerCallback&& handler);
    
     int start();
     int stop();
 
-    TimerID  addTimeout(int delayMS, TimeCallback callback);
+    TimerID  addTimeout(int delayMS, TimeCallback&& callback);
 
     bool removeTimeout(TimerID  id);
 
-    void addCallback(Callback callback);
+    void addCallback(Callback&& callback);
 
     inline int getHandlerNum()const {return handle_num_;}
     bool idle() const { return callbacks_.empty() && timeouts_.empty() ;}

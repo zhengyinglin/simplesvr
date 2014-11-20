@@ -20,13 +20,13 @@ class MyTCP : public TcpClient
         //set close callback
         char szbuff[400];
         memset(szbuff, 0x1, sizeof(szbuff));
-        stream_->write_bytes(szbuff, 400, boost::bind(&MyTCP::write_done, this, _1));
+        stream_->write_bytes(szbuff, 400, std::bind(&MyTCP::write_done, this, std::placeholders::_1));
     }
 
     void write_done(int32_t fd)
     {
         LOG_INFO_STR("connect timeout");
-        stream_->read_bytes(16, boost::bind(&MyTCP::read_done, this, _1, _2));
+        stream_->read_bytes(16, std::bind(&MyTCP::read_done, this, std::placeholders::_1, std::placeholders::_2));
     }
     
     void read_done(int32_t fd, const std::string& data)
@@ -36,18 +36,18 @@ class MyTCP : public TcpClient
         LOG_INFO("recv:%s", data.c_str());
         if(i>20)
         {
-            io_loop_->addCallback(boost::bind(&MyTCP::quit_loop, this));
+            io_loop_->addCallback(std::bind(&MyTCP::quit_loop, this));
             return ;
         }
         //set close callback
         char szbuff[400];
         memset(szbuff, 0x1, sizeof(szbuff));
-        stream_->write_bytes(szbuff, 400, boost::bind(&MyTCP::write_done, this, _1));
+        stream_->write_bytes(szbuff, 400, std::bind(&MyTCP::write_done, this, std::placeholders::_1));
     }
 
     void quit_loop()
     {
-    tornado::IOLoop::instance()->stop();
+        tornado::IOLoop::instance()->stop();
     }
     
 };
@@ -76,13 +76,6 @@ char buff[]="GET http://game.ld2.qq.com/cgi-bin/happy_fight_two?cmd=1&amp;gamefl
 
 int main()
 {
-   
-
-/*
-    tornado::MyTCP  objTCP;
-    tornado::IOLoop::instance()->addCallback( boost::bind(&test, &objTCP) );
-    tornado::IOLoop::instance()->start(); */
-
     std::string data(buff);
     size_t eol = data.find("\r\n");
        assert(eol != std::string::npos);

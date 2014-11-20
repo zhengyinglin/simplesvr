@@ -1,6 +1,6 @@
 简单说明
 ====================
-###　　Date: 2014-10-16
+###　　Date: 2014-11-20
 ###　　EMail: 979762787@qq.com
 
 ===========================
@@ -50,6 +50,7 @@ tcp_svr   < -- >   tcp_client
 在机器上10.193.0.102启动
 ./tcp_svr --logfile=svrlog.log  --port=7777  --loglevel=3
 
+注意如果用clang 编译出来的会依赖高版本gcc的2个库 lib64/libstdc++.so.6  libgcc_s.so.1 
 
 ###客户端
 
@@ -59,7 +60,7 @@ python  start_tcp_client.py
 ```Python
 #start_tcp_client.py 
 import os
-cmd = './tcp_client --ip=10.193.0.102 --port=7777 --pkgnum=50000 --loglevel=3 --logfile=tcp_log_%s  &'
+cmd = './tcp_client --ip=10.193.0.102 --port=7777 --pkgnum=60000 --loglevel=3 --logfile=tcp_log_%s  &'
 n = 10 
 for i in xrange(n):
     os.system(cmd % i)
@@ -79,18 +80,19 @@ tcp_log_0:INFO|1414064535.407|tcp_client.cpp|101|readDone|PKG Done
 
 grep "PKG Done" tcp_log_* | sort -t\| -k2 |  cut -c 16-25 | uniq -c
 
-  36730 1414064535
-  63343 1414064536
-  63127 1414064537
-  63119 1414064538
-  62808 1414064539
-  63024 1414064540
-  63176 1414064541
-  60577 1414064542
-  24096 1414064543
+  49732 1416484097
+  67581 1416484098
+  66634 1416484099
+  67322 1416484100
+  66882 1416484101
+  66831 1416484102
+  66862 1416484103
+  66873 1416484104
+  64821 1416484105
+  16462 1416484106 
 ```
 
-大概每秒能够处理 63K 的请求
+大概每秒能够处理 67K 的请求
 
 
 
@@ -115,12 +117,12 @@ done.
 
 Transactions:                 100000 hits
 Availability:                 100.00 %
-Elapsed time:                   6.22 secs
+Elapsed time:                   6.25 secs
 Data transferred:               0.19 MB
 Response time:                  0.01 secs
-Transaction rate:           16077.17 trans/sec
+Transaction rate:           16000.00 trans/sec
 Throughput:                     0.03 MB/sec
-Concurrency:                   99.44
+Concurrency:                   99.35
 Successful transactions:      100000
 Failed transactions:               0
 Longest transaction:            0.02
@@ -150,12 +152,12 @@ done.
 
 Transactions:                 100000 hits
 Availability:                 100.00 %
-Elapsed time:                   7.25 secs
+Elapsed time:                   7.16 secs
 Data transferred:               1.05 MB
 Response time:                  0.01 secs
-Transaction rate:           13793.10 trans/sec
-Throughput:                     0.14 MB/sec
-Concurrency:                   99.50
+Transaction rate:           13966.48 trans/sec
+Throughput:                     0.15 MB/sec
+Concurrency:                   99.52
 Successful transactions:      100000
 Failed transactions:               0
 Longest transaction:            0.02
@@ -190,15 +192,15 @@ done.
 
 Transactions:                 100000 hits
 Availability:                 100.00 %
-Elapsed time:                  14.13 secs
+Elapsed time:                  13.10 secs
 Data transferred:              39.67 MB
 Response time:                  0.01 secs
-Transaction rate:            7077.14 trans/sec
-Throughput:                     2.81 MB/sec
-Concurrency:                   99.66
+Transaction rate:            7633.59 trans/sec
+Throughput:                     3.03 MB/sec
+Concurrency:                   99.62
 Successful transactions:      100000
 Failed transactions:               0
-Longest transaction:            0.02
+Longest transaction:            0.03
 Shortest transaction:           0.00
 ```
 

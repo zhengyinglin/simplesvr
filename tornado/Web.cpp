@@ -86,7 +86,7 @@ RequestHandler::~RequestHandler()
 void RequestHandler::setHTTPConnection(const HTTPConnectionPtr&  conn)
 {
     conn_ = conn;
-    conn_->setCloseCallback( boost::bind(&RequestHandler::on_connect_close, shared_from_this() ) );
+    conn_->setCloseCallback( std::bind(&RequestHandler::on_connect_close, shared_from_this() ) );
 }
 
 void RequestHandler::on_connect_close()
@@ -235,7 +235,7 @@ const std::string& RequestHandler::get_cookie(const std::string& name)
 int Application::listen(const std::string& address, uint32_t port)
 {
     assert( NULL == server_);
-    server_ = new HTTPServer( boost::bind(&Application::handler, this, _1) ); 
+    server_ = new HTTPServer( std::bind(&Application::handler, this, std::placeholders::_1) ); 
     if( server_->listen(address, port))
         return -1;
     return 0;
@@ -259,7 +259,7 @@ void Application::handler(HTTPConnectionPtr conn)
 {
     const HTTPRequest& request = conn->getRequset();
 
-    typedef boost::shared_ptr<RequestHandler> RequestHandlerPtr;
+    typedef std::shared_ptr<RequestHandler> RequestHandlerPtr;
 
     RequestHandlerPtr handler( find_handler(request.path) );
     handler->setHTTPConnection(conn);

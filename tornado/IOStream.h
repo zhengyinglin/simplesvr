@@ -8,18 +8,16 @@
 #define _TORNADO_IO_STREAM_H_
 #include "IOLoop.h"
 #include "Buffer.h"
-#include "boost/enable_shared_from_this.hpp"
-#include "boost/shared_ptr.hpp"
 
 namespace tornado
 {
 class IOLoop;
 
-class IOStream : public boost::enable_shared_from_this<IOStream>
+class IOStream : public std::enable_shared_from_this<IOStream>
 {
 public:
-    typedef boost::function<void(const std::string&)> ReadCallback;
-    typedef boost::function<void(int)> ConnectCallback;
+    typedef std::function<void(const std::string&)> ReadCallback;
+    typedef std::function<void(int)> ConnectCallback;
     typedef IOLoop::Callback   WriteCallback;
     typedef IOLoop::Callback   CloseCallback;
     enum { 
@@ -40,20 +38,20 @@ public:
     bool connect(const char* ip, short port, ConnectCallback callback);
     
 
-    void setCloseCallback(CloseCallback callback);
+    void setCloseCallback(CloseCallback&& callback);
 
   
     int writeBytes(const char* data, int len);
-    int writeBytes(const char* data, int len, WriteCallback callback);
+    int writeBytes(const char* data, int len, WriteCallback&& callback);
     int writeBytes(const std::string& data)
     {
         return writeBytes(data.c_str(), data.size());
     }
     int justWriteBytesToBuff(const char* data, int len);
 
-    int readBytes(int num_bytes, ReadCallback callback);
-    int readUntil(const std::string& delimiter, ReadCallback callback);
-    int readUntilClose(ReadCallback callback);
+    int readBytes(int num_bytes, ReadCallback&& callback);
+    int readUntil(const std::string& delimiter, ReadCallback&& callback);
+    int readUntilClose(ReadCallback&& callback);
 
     bool reading();
     bool writing();
@@ -84,7 +82,7 @@ private:
     bool   read_until_close_;
 };
 
-typedef boost::shared_ptr<IOStream> IOStreamPtr;
+typedef std::shared_ptr<IOStream> IOStreamPtr;
 
 
 

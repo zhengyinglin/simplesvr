@@ -13,7 +13,7 @@ namespace tornado
 {
 
 
-class TcpConnection : public boost::enable_shared_from_this<TcpConnection>
+class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
 public:
     TcpConnection(IOStreamPtr& stream):
@@ -29,14 +29,14 @@ public:
 
     void startRun()
     { 
-        stream_->setCloseCallback( boost::bind(&TcpConnection::onStreamColse, shared_from_this()));
+        stream_->setCloseCallback( std::bind(&TcpConnection::onStreamColse, shared_from_this()));
         startReading();
     }
 
     int startReading()
     {
         int iRet = stream_->readBytes(400, 
-            boost::bind(&TcpConnection::readHeader, shared_from_this(), _1));
+            std::bind(&TcpConnection::readHeader, shared_from_this(), std::placeholders::_1));
         if(iRet)
         {
             TORNADO_LOG_ERROR("readBytes faile ret = %d", iRet);
@@ -52,7 +52,7 @@ public:
         //std::string  buff(400, 'a');
         //int iRet = stream_->writeBytes(buff.c_str(), buff.size(), 
         int iRet = stream_->writeBytes(data.c_str(), data.size(), 
-            boost::bind(&TcpConnection::OnWriterDone, shared_from_this()) );
+            std::bind(&TcpConnection::OnWriterDone, shared_from_this()) );
         if( iRet )
         {
             TORNADO_LOG_ERROR("fd=%d|writeBytes faile ret = %d", fd, iRet);
@@ -74,7 +74,7 @@ private:
     IOStreamPtr  stream_;
 };
 
-typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
+typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
 class MySvr : public TcpServer
 {
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     tornado::MySvr svr;
 
     int32_t sfd = tornado::IOLoop::instance()->addSignalHandler(SIGTERM, 
-        boost::bind(&tornado::MySvr::signal_handler, &svr, _1, _2)
+        std::bind(&tornado::MySvr::signal_handler, &svr, std::placeholders::_1, std::placeholders::_2)
         );
     if(sfd < 0)
     {

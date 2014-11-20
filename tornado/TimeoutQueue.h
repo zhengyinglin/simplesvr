@@ -33,14 +33,13 @@
 #include "boost/multi_index/indexed_by.hpp"
 #include "boost/multi_index/ordered_index.hpp"
 #include "boost/multi_index/member.hpp"
-#include "boost/function.hpp"
 
 namespace folly {
 
 class TimeoutQueue {
  public:
   typedef uint64_t Id;
-  typedef boost::function<void(Id, int64_t)> Callback;
+  typedef std::function<void(Id, int64_t)> Callback;
 
   TimeoutQueue() : nextId_(1) { }
 

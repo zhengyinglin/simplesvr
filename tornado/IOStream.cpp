@@ -4,12 +4,12 @@
 #include <algorithm>
 #include "Util.h"
 #include "Logging.h"
-#include "boost/bind.hpp"
+
 
 namespace tornado
 {
 
-typedef boost::shared_ptr<std::string> StringPtr;
+typedef std::shared_ptr<std::string> StringPtr;
 
 void inner_connect_callback(IOStream::ConnectCallback& cb, int err)
 {
@@ -63,8 +63,8 @@ void IOStream::close()
                 if( read_callback_ )
                 {
                     TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
-                    io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
-                    read_callback_.clear();
+                    io_loop_->addCallback( std::bind(&inner_read_callback, read_callback_, result) );
+                    read_callback_ = nullptr;
                 }
             }
         }
@@ -82,16 +82,16 @@ void IOStream::close()
     if(close_callback_)
     {
         TORNADO_LOG_INFO_STR("run close_callback put to ioloop callback");
-        io_loop_->addCallback(close_callback_);
-        close_callback_.clear();//release
+        io_loop_->addCallback( std::move(close_callback_) );
+        close_callback_ = nullptr; //release
     }
     
     if(connect_callback_)
-        connect_callback_.clear();
+        connect_callback_ = nullptr;
     if(read_callback_)
-        read_callback_.clear();
+        read_callback_ = nullptr;
     if(write_callback_)
-        write_callback_.clear();
+        write_callback_ = nullptr;
 }
 
 
@@ -129,7 +129,7 @@ bool IOStream::connect(const char* ip, short port, ConnectCallback callback)
 }
 
 
-void IOStream::setCloseCallback(CloseCallback callback)
+void IOStream::setCloseCallback(CloseCallback&& callback)
 {
     close_callback_ = callback;
 }
@@ -165,15 +165,15 @@ int IOStream::writeBytes(const char* data, int len)
     return 0;
 }
 
-int IOStream::writeBytes(const char* data, int len, WriteCallback callback)
+int IOStream::writeBytes(const char* data, int len, WriteCallback&& callback)
 {
-    assert(write_callback_.empty());
+    assert(!write_callback_);
 
     write_callback_ = callback;
     int ret = writeBytes(data, len);
     if(ret)
     {
-        write_callback_.clear();
+        write_callback_ = nullptr;
     }
     return ret;
 }
@@ -195,11 +195,11 @@ int IOStream::justWriteBytesToBuff(const char* data, int len)
     return 0;
 }
 
-int IOStream::readBytes(int num_bytes, ReadCallback callback)
+int IOStream::readBytes(int num_bytes, ReadCallback&& callback)
 { 
     if(num_bytes <= 0 )
         return -1;
-    assert(read_callback_.empty());
+    assert(!read_callback_);
     assert(read_delimiter_.empty() && read_bytes_ == 0 && read_until_close_ == false );
 
 
@@ -212,7 +212,7 @@ int IOStream::readBytes(int num_bytes, ReadCallback callback)
             if( callback )
             {   //read_callback_
                 TORNADO_LOG_INFO_STR("local have data run read_callback_ put to ioloop callback");
-                io_loop_->addCallback( boost::bind(&inner_read_callback, callback, result) );
+                io_loop_->addCallback( std::bind(&inner_read_callback, callback, result) );
             }
             return 0;
         }
@@ -238,12 +238,12 @@ int IOStream::readBytes(int num_bytes, ReadCallback callback)
     return 0;
 }
 
-int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
+int IOStream::readUntil(const std::string& delimiter, ReadCallback&& callback)
 {
     if(delimiter.empty())
         return -1;
 
-    assert(read_callback_.empty());
+    assert(!read_callback_);
     assert(read_delimiter_.empty() && read_bytes_ == 0 && read_until_close_ == false );
 
     //本地缓存有数据，直接返回
@@ -257,7 +257,7 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
             if( callback )
             {   //read_callback_
                 TORNADO_LOG_INFO_STR("local have data run read_callback_ put to ioloop callback");
-                io_loop_->addCallback( boost::bind(&inner_read_callback, callback, result) );
+                io_loop_->addCallback( std::bind(&inner_read_callback, callback, result) );
             }
             return 0;
         }
@@ -282,9 +282,9 @@ int IOStream::readUntil(const std::string& delimiter, ReadCallback callback)
     return 0;
 }
     
-int IOStream::readUntilClose(ReadCallback callback)
+int IOStream::readUntilClose(ReadCallback&& callback)
 {
-    assert(read_callback_.empty());
+    assert(!read_callback_);
     assert(read_delimiter_.empty() && read_bytes_ == 0 && read_until_close_ == false );
     
     read_until_close_ = true;
@@ -315,7 +315,7 @@ void IOStream::addIOState(int state)
     {
         state_ = IOLoop::ERROR | state;
         io_loop_->addHandler(socket_, 
-              boost::bind(&IOStream::handleEvents, shared_from_this(), _1, _2), 
+              std::bind(&IOStream::handleEvents, shared_from_this(), std::placeholders::_1, std::placeholders::_2), 
               state_);
     }
     else
@@ -419,8 +419,8 @@ void IOStream::handleConnect()
         if(connect_callback_)
         {
             TORNADO_LOG_INFO_STR("run connect_callback_ put to ioloop callback");
-            io_loop_->addCallback( boost::bind(&inner_connect_callback,  connect_callback_, errno) );
-            connect_callback_.clear();
+            io_loop_->addCallback( std::bind(&inner_connect_callback,  connect_callback_, errno) );
+            connect_callback_ = nullptr;
         }
         this->close();
         return ;
@@ -428,8 +428,8 @@ void IOStream::handleConnect()
     if( connect_callback_ )
     {
         TORNADO_LOG_INFO_STR("run connect_callback_ put to ioloop callback");
-        io_loop_->addCallback( boost::bind(&inner_connect_callback,  connect_callback_, 0) );
-        connect_callback_.clear();
+        io_loop_->addCallback( std::bind(&inner_connect_callback,  connect_callback_, 0) );
+        connect_callback_ = nullptr;
     }
     connecting_ = false;
     TORNADO_LOG_INFO_STR("connnect succ");
@@ -462,8 +462,8 @@ int IOStream::handleRead()
             if( read_callback_ )
             {
                 TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
-                io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
-                read_callback_.clear(); 
+                io_loop_->addCallback( std::bind(&inner_read_callback, read_callback_, result) );
+                read_callback_ = nullptr; 
             }
             return 0;
         }
@@ -483,8 +483,8 @@ int IOStream::handleRead()
                 if( read_callback_ )
                 {
                     TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
-                    io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
-                    read_callback_.clear();
+                    io_loop_->addCallback( std::bind(&inner_read_callback, read_callback_, result) );
+                    read_callback_ = nullptr;
                 }
                 return 0;
             }
@@ -503,7 +503,7 @@ int IOStream::handleRead()
                 if( read_callback_ )
                 {
                     TORNADO_LOG_INFO_STR("recv data run read_callback_ put to ioloop callback");
-                    io_loop_->addCallback( boost::bind(&inner_read_callback, read_callback_, result) );
+                    io_loop_->addCallback( std::bind(&inner_read_callback, read_callback_, result) );
                 }
                 else
                 {
@@ -628,8 +628,8 @@ int IOStream::handleWrite()
         if(write_callback_)
         {
             TORNADO_LOG_DEBUG_STR("write done run write_callback_ on ioloop callback");
-            io_loop_->addCallback(write_callback_);
-            write_callback_.clear();//release
+            io_loop_->addCallback( std::move(write_callback_) );
+            write_callback_ = nullptr;//release
         }
     }
     return 0;
