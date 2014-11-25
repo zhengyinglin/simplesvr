@@ -1,6 +1,6 @@
 简单说明
 ====================
-###　　Date: 2014-10-16
+###　　Date: 2014-11-25
 ###　　EMail: 979762787@qq.com
 
 ===========================
@@ -11,6 +11,8 @@
 ##文件说明
 
 tornado/
+|-- App.cpp
+|-- App.h
 |-- Buffer.cpp
 |-- Buffer.h
 |-- CMakeLists.txt
@@ -32,7 +34,17 @@ tornado/
 |-- Util.h
 |-- Web.cpp
 |-- Web.h
-`-- build
+|-- build
+|-- shm
+|   |-- container.hpp
+|   `-- mq.hpp
+`-- util
+    |-- boost_ptree.h
+    |-- comm.h
+    |-- ini.h
+    |-- json.h
+    |-- random.h
+    `-- xml.h
 
 
 build 编译目录
@@ -42,7 +54,7 @@ cmake ..
 make
 ```
 编译后lib库  lib/libtornado.a
-需要修改CMakeLists.txt里面boost 路径 SET(BOOST ...) 
+需要修改CMakeLists.txt里面boost、gflag 路径 SET  BOOST  GFLAGS
 
 
 EPoll.h   epoll 简单封装
@@ -58,7 +70,6 @@ Web.h            httpsvr的封装
 
 
 ##编译gflag
-可选编译gflag
 https://github.com/schuhschuh/gflags
 
 tar -xvf gflags-2.1.1.tar.gz

@@ -2,8 +2,12 @@
 #include "tornado/util/json.h"
 #include "tornado/util/ini.h"
 #include "tornado/util/xml.h"
+#include "tornado/util/random.h"
 #include <iostream>
 #include <string>
+#include <stdint.h>
+#include <vector>
+#include <map>
 using namespace util::comm;
 
 std::string input ="'f;dfdfs@^^#^#^#&^#&^#&*@&*@234567890qwertyuiopasdfghjkl;'zxcvbnm,.v./v./cv;sd;";
@@ -67,14 +71,77 @@ void test_ini()
 
 void test_xml()
 {
+    std::string xml_str = " \
+<root name=\"rootname\"> \
+    <file name=\"debug.log\"/> \
+    <modules type=\"internal\">  \
+        <module>Finance_Internal</module> \
+        <module>Admin_Internal</module>  \
+        <module>HR_Internal</module>  \
+    </modules> \
+</root>";
+
     Xml  xml;
-    xml.paserFromFile("/tmp/WC2.xml");
-/*
-    std::cout << "====================================>>>>>\n";
-    std::cout << "TT_FEEDS_API.HostNum = " << ini.get<int>("TT_FEEDS_API.HostNum", -1) << std::endl;
-    std::cout << "General.xml_path = " << ini.get<std::string>("General.xml_path", "nothing ...") << std::endl;
-    std::cout << "General.xml_path = " << ini.get<std::string>("General.xml_pathoo", "nothing ...") << std::endl;
-    std::cout << "General.test_time = " << ini.get<std::string>("General.test_time", "nothing ...") << std::endl;*/
+    xml.paserFromString(xml_str);
+    //name = rootname
+    std::cout << xml.get<std::string>("root.<xmlattr>.name", "empty....") << std::endl;
+    //name = debug.log
+    std::cout << xml.get<std::string>("root.file.<xmlattr>.name", "empty....") << std::endl;
+
+    auto modules = xml.getChild("root.modules");
+    if(modules)
+    {
+        for( auto& m : modules.get() )
+        {
+            if( m.first != "<xmlattr>" )
+            {   //<module>Finance_Internal</module>
+                std::cout << "root.modules = " << m.first << "  " << m.second.get_value<std::string>() << std::endl;
+            }
+        }
+    }
+}
+
+void test_rand()
+{
+    //默认int
+    std::cout << "[0, 10) --> " << Random::instance().rand(10) << std::endl;
+
+   
+    {
+        uint32_t min = 100;
+        uint32_t max = 10000;
+        std::cout << "[0, "<< max << ") --> " << Random::instance().rand<uint32_t>(max) << std::endl;
+        std::cout << "["<< min<<", "<< max << ") --> " << Random::instance().rand<uint32_t>(min, max) << std::endl;
+    }
+
+    {
+        uint64_t min = 100;
+        uint64_t max = (uint64_t)1<<62;
+        std::cout << "[0, "<< max << ") --> " << Random::instance().rand<uint64_t>(max) << std::endl;
+        std::cout << "["<< min<<", "<< max << ") --> " << Random::instance().rand<uint64_t>(min, max) << std::endl;
+    }
+
+    {
+        std::cout << "{90.0, 200.0, 600.0, 10.0} --> " << Random::instance().weightRand({90.0, 200.0, 600.0, 10.0}) << std::endl;
+        std::vector<double> v = {90.0, 200.0, 600.0, 10.0};
+        std::cout << "{90.0, 200.0, 600.0, 10.0} --> " << Random::instance().weightRand(v.begin(), v.end()) << std::endl;
+    }
+  
+
+    {
+        WeightRand objRand(  {90.0, 200.0, 600.0, 10.0}  );
+        std::cout << "{90, 300, 600, 10} -->" << std::endl;
+        std::map<int, int> m;
+        for(int n=0; n<10000; ++n) 
+        {
+            ++m[objRand.rand()];
+        }
+        for(auto& p : m) 
+        {
+            std::cout << p.first << " generated " << p.second << " times\n";
+        }
+    }
+
 }
 
 int main()
@@ -93,6 +160,8 @@ int main()
     test_json();
     test_ini();
     test_xml();
+
+    test_rand();
 
     return 0;
 }
