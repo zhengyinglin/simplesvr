@@ -1,23 +1,23 @@
 #include "Logging.h"
 
-#include <sys/types.h>
-#include <unistd.h>
+
+#include <stdio.h>
 #include <string>
-
-
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <fcntl.h>
-
 #include <string.h>
 #include <libgen.h>
 #include <stdarg.h>
-#include <sys/time.h>
+
 
 
 DEFINE_int32(loglevel, tornado::DEBUG, "DEBUG"); 
 DEFINE_int32(logbufsecs, 10, "10 seconds");
 DEFINE_string(logfile, "", "logfile name");
-DEFINE_int32(force_flush, 0, "force_flush");
+DEFINE_int32(force_flush, 1, "force_flush");
 
 namespace tornado
 {
@@ -29,8 +29,7 @@ int init_log(int argc, char* argv[])
     std::string logfile = FLAGS_logfile;
     if(logfile.empty())
     {
-        long long int pid = getpid();
-        logfile = std::to_string( pid ) + ".log";
+        return LogFileObject::instance().createLogfile(NULL);
     }
     return LogFileObject::instance().createLogfile(logfile.c_str());
 }
@@ -40,7 +39,17 @@ int init_log(int argc, char* argv[])
 bool LogFileObject::createLogfile(const char* filename)
 {
     this->close();
-        
+    if(filename == NULL) //using stdout
+    {
+        file_ = fdopen(STDOUT_FILENO, "a");  // Make a FILE*.
+        if (file_ == NULL)
+        {  
+            printf("fdopen fail errno = %d , %s\n", errno, strerror(errno) );
+            return false;
+        }
+        return true;
+    }
+
     int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL , 0664);
     if (fd == -1)
     {

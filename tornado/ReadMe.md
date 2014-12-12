@@ -5,8 +5,13 @@
 
 ===========================
 
-基于[tornado](https://github.com/tornadoweb/tornado) 实现的一个c++异步库
-（依赖boost库，gflags gcc >= 4.4.5）
+基于[tornado](https://github.com/tornadoweb/tornado) 实现的一个c++异步库(需要c++11才可以编译)
+（
+依赖库:
+boost_1_54_0
+gflags-2.1.1
+c-ares-1.10.0  (for DNS) 
+）
 
 ##文件说明
 
@@ -27,6 +32,8 @@ tornado/
 |-- Logging.cpp
 |-- Logging.h
 |-- ReadMe.md
+|-- Resolver.cpp
+|-- Resolver.h
 |-- TcpServer.cpp
 |-- TcpServer.h
 |-- TimeoutQueue.cpp
@@ -40,10 +47,13 @@ tornado/
 |   `-- mq.hpp
 `-- util
     |-- boost_ptree.h
+    |-- comm.cpp
     |-- comm.h
+    |-- file.h
     |-- ini.h
     |-- json.h
     |-- random.h
+    |-- scople_guard.h
     `-- xml.h
 
 
@@ -54,7 +64,7 @@ cmake ..
 make
 ```
 编译后lib库  lib/libtornado.a
-需要修改CMakeLists.txt里面boost、gflag 路径 SET  BOOST  GFLAGS
+需要修改CMakeLists.txt里面boost、gflag c-ares 路径 SET  BOOST  GFLAGS CARES
 
 
 EPoll.h   epoll 简单封装
@@ -67,6 +77,7 @@ Util.h          常用函数封装
 TcpServer.h      简单tcp 服务器
 HttpServer.h     基于tcpsvr的一个http服务器
 Web.h            httpsvr的封装
+Resolver.h       异步DNS封装（gethostbyname）
 
 
 ##编译gflag
@@ -77,3 +88,17 @@ cd gflags-2.1.1 && mkdir build && cd build
 CXXFLAGS="-fPIC -O3 -DNDEBUG"  cmake .. -DGFLAGS_NAMESPACE=google  -DCMAKE_INSTALL_PREFIX=/xxxx/google/gflags-2.1.1 
 make VERBOSE=1
 make install
+
+
+##编译c-ares
+https://github.com/schuhschuh/gflags
+
+tar xvf c-ares-1.10.0.tar.gz 
+cd c-ares-1.10.0
+./configure --prefix=/xxxx/c-ares
+make 
+make install
+
+##boost
+不用编译，只使用boost的头文件
+

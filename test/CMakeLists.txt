@@ -14,13 +14,27 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 SET(BOOST    /yourpath/boost/boost_1_54_0/)
 SET(TORNADO  /yourpath/somelib/svr/)
 SET(GFLAGS   /yourpath/lib/google/gflags-2.1.1)
-
+SET(CARES    /yourpath/lib/c-ares)
 
 INCLUDE_DIRECTORIES(
        ${BOOST}
 	   ${TORNADO}
 	   ${GFLAGS}/include
+	   ${CARES}/include
 	)
+
+
+ADD_EXECUTABLE(test_dns
+					test_dns
+			   )
+
+
+TARGET_LINK_LIBRARIES(test_dns
+	${TORNADO}/tornado/build/lib/libtornado.a
+	${GFLAGS}/lib/libgflags_nothreads.a
+	pthread  rt
+	${CARES}/lib/libcares.a
+)
 
 
 
@@ -87,6 +101,7 @@ TARGET_LINK_LIBRARIES(test_shm
 
 ADD_EXECUTABLE(test_util
 					test_util
+					${TORNADO}/tornado/util/comm
 			   )
 
 TARGET_LINK_LIBRARIES(test_util

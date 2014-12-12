@@ -25,6 +25,8 @@ TimeoutQueue::Id TimeoutQueue::add(
   int64_t now,
   int64_t delay,
   Callback callback) {
+  if(nextId_ == 0)
+      nextId_ = 1;
   Id id = nextId_++;
   //timeouts_.insert({id, now + delay, -1, std::move(callback)});
   timeouts_.insert({id, now + delay, std::move(callback)});

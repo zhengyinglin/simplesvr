@@ -3,6 +3,7 @@
 #include "tornado/util/ini.h"
 #include "tornado/util/xml.h"
 #include "tornado/util/random.h"
+#include "tornado/util/scople_guard.h"
 #include <iostream>
 #include <string>
 #include <stdint.h>
@@ -40,6 +41,22 @@ void test_hex_2()
     std::cout << buff2 << std::endl;
     unhexstr2.assign(buff2, size2);   
 }
+
+void test_base64()
+{
+    TimeSpan tmp;
+    std::string base64;
+    std::string str = "from nginx-1.6.0/src/core/ngx_string.c  -+===--****^^^!@#$%^*[][]';<>?";
+    encode_base64(base64, str);
+    std::cout << str.length() << " : " << str << std::endl;
+    std::cout << base64 << std::endl;
+
+    std::string destr;
+    int ret = decode_base64(destr, base64);
+    std::cout << ret << std::endl;
+    std::cout <<destr.length() << " : " << destr << std::endl;
+}
+
 
 
 void test_json()
@@ -144,8 +161,24 @@ void test_rand()
 
 }
 
+void test_scople_guard()
+{
+    std::vector<int> values;
+
+    values.push_back( 1000 );
+
+    auto&& guard = makeGuard(  [&]{ values.pop_back();std::cout << "make guard\n";  }   );
+
+    bool succ = false;
+    if(succ)
+    {
+        guard.dismiss();
+    }
+}
+
 int main()
 { 
+    test_base64();
     test_hex();
     test_hex_2();
     if(hexstr == hexstr2 && unhexstr == unhexstr2 && input == unhexstr)
@@ -156,12 +189,13 @@ int main()
     {
         std::cout << "----------------> check failed\n";
     }
-
+/*
     test_json();
     test_ini();
     test_xml();
 
-    test_rand();
+    test_rand(); */
+    test_scople_guard();
 
     return 0;
 }
