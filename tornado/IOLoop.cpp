@@ -1,6 +1,5 @@
 #include "IOLoop.h"
 #include "Logging.h"
-#include "Util.h"
 #include <signal.h>
 #include <sys/signalfd.h>
 
@@ -117,13 +116,12 @@ int32_t IOLoop::addSignalHandler(int signum, HandlerCallback&& handler)
 
 int IOLoop::start()
 {
-    if(running_)
-    {
-        TORNADO_LOG_ERROR_STR("IOLoop is already running");
-        return -1;
-    }
+     if(running_)
+     {
+         TORNADO_LOG_ERROR_STR("IOLoop is already running");
+         return -1;
+     }
 
-    //self._setup_logging()
      running_ = true;
      uint32_t loopnum = 0;
      while(true)
@@ -164,7 +162,7 @@ int IOLoop::start()
          int64_t now = TimeUtil::curTimeMS();
          if(false == callbacks_.empty())
          {
-            poll_timeout = 0;
+             poll_timeout = 0;
          }
          else if(timeouts_.nextExpiration() - now < poll_timeout )
          {
@@ -175,7 +173,7 @@ int IOLoop::start()
          }
          TORNADO_LOG_DEBUG("IOLoop poll_timeout = %d", poll_timeout);
 
-         struct epoll_event*  event_list = NULL;
+         struct epoll_event*  event_list = nullptr;
          int numEvents = impl_.poll(poll_timeout, event_list);
          for(int i=0; i<numEvents; i++)
          {
@@ -194,7 +192,6 @@ int IOLoop::start()
                  }
              }
          }
-
      }//while(true)
      return 0;
 }
@@ -202,25 +199,7 @@ int IOLoop::start()
 int IOLoop::stop()
 {
     running_ = false;
-    //self._waker.wake()
     return 0;
-}
-
-
-IOLoop::TimerID  IOLoop::addTimeout(int delayMS, TimeCallback&& callback)
-{
-    return timeouts_.add(TimeUtil::curTimeMS(), delayMS, callback);
-}
-
-bool IOLoop::removeTimeout(TimerID  id)
-{
-    return timeouts_.erase(id); 
-}
-
-
-void IOLoop::addCallback(Callback&& callback)
-{
-    callbacks_.push_back(std::move(callback));
 }
 
 

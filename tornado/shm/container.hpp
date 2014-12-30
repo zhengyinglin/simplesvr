@@ -11,6 +11,13 @@
 #include <string>
 #include <assert.h>
 
+
+#include "boost/multi_index_container.hpp"
+#include "boost/multi_index/member.hpp"
+#include "boost/multi_index/ordered_index.hpp"
+#include "boost/multi_index/indexed_by.hpp"
+
+
 namespace  boostshm
 {
 
@@ -123,7 +130,7 @@ public:
     { 
         CharAllocator charAloc(ShmVector<shm_string>::m_pSegment->get_segment_manager());
         shm_string  val(buff, size, charAloc);
-        ShmVector<shm_string>::m_pVector->push_back(val);
+        ShmVector<shm_string>::m_pVector->push_back( boost::move(val) );
     }
 };
 
@@ -220,7 +227,7 @@ public:
     { 
         CharAllocator charAloc(ShmSet<shm_string>::m_pSegment->get_segment_manager());
         shm_string  new_val(buff, size, charAloc);
-        ShmSet<shm_string>::m_pSet->insert(new_val);
+        ShmSet<shm_string>::m_pSet->insert( boost::move(new_val) );
     }
 };
 
@@ -409,6 +416,120 @@ protected:
     ManagedSharedMemory* m_pSegment;
     MultiMap *m_pMultiMap;
 };
+
+
+//!!!!! have bug ??? clang 3.5 building with -O2 will core dumped
+//http://www.boost.org/doc/libs/1_48_0/doc/html/interprocess/allocators_containers.html#interprocess.allocators_containers.additional_containers.multi_index
+class TimerQueue
+{
+public:
+    #pragma pack(push, 1)
+    struct Item 
+    {
+        uint32_t  id;
+        int64_t  expiration;
+    };
+    #pragma pack(pop)
+
+    //Tags
+    //struct id{};
+    //struct expiration{};
+    enum {  BY_ID=0, BY_EXPIRATION=1 };
+    typedef boost::multi_index::multi_index_container<
+        Item,
+        boost::multi_index::indexed_by<
+            boost::multi_index::ordered_unique<
+                //boost::multi_index::tag<id>, 
+                BOOST_MULTI_INDEX_MEMBER(Item, uint32_t, id)
+            >,
+            boost::multi_index::ordered_non_unique<
+                //boost::multi_index::tag<expiration>, 
+                BOOST_MULTI_INDEX_MEMBER(Item, int64_t, expiration)
+            >
+        >,
+       // ManagedSharedMemory::allocator<Item, ManagedSharedMemory::segment_manager>        
+       ManagedSharedMemory::allocator<Item>::type
+    > Set;
+
+    TimerQueue(const char* pMemName, size_t  alloc_size)
+    {
+        bool bNewCreate = false;
+        m_pSegment = NULL;
+        try
+        {
+            m_pSegment = new ManagedSharedMemory(boost::interprocess::open_only, pMemName);    
+        }
+        catch (const std::exception& e )
+        {
+            assert(alloc_size > 0);
+            m_pSegment = new ManagedSharedMemory(boost::interprocess::create_only, pMemName, alloc_size);
+            bNewCreate = true;
+        }
+
+        if(bNewCreate)
+        {
+            timers_ = m_pSegment->construct<Set>
+                ("TimerQueue")            //Container's name in shared memory
+                ( Set::ctor_args_list(), m_pSegment->get_allocator<Item>());  //Ctor parameters
+            //id 从1 开始
+            nextId_ = m_pSegment->construct<uint32_t>("IntNextId")(1);
+        }
+        else
+        {
+            timers_ = m_pSegment->find<Set>("TimerQueue").first;
+            nextId_ = m_pSegment->find<uint32_t>("IntNextId").first;
+        }
+        assert(timers_ != NULL) ;
+        //check size
+        assert( alloc_size &&  m_pSegment->get_size() == alloc_size );
+    }
+    
+    virtual ~TimerQueue()
+    {
+        delete m_pSegment;
+    }
+
+    const Set* getTimers(){return timers_;}
+
+    bool empty() const { return timers_->empty();}
+
+    int64_t add(int64_t expiration)
+    {
+        if(*nextId_ == 0)
+            *nextId_ = 1;
+        uint32_t id = (*nextId_)++;
+        timers_->insert({id, expiration});
+        return id;
+    }
+
+    bool erase(uint32_t id)
+    {
+        return timers_->get<BY_ID>().erase(id);
+    }
+
+    int64_t nextExpiration() const
+    {
+       return (timers_->empty() ? std::numeric_limits<int64_t>::max() :
+          timers_->get<BY_EXPIRATION>().begin()->expiration);
+    }
+
+    int64_t getExpirationTimer(int64_t now, std::vector<Item>& items)
+    {
+        auto& byExpiration = timers_->get<BY_EXPIRATION>();
+        auto end = byExpiration.upper_bound(now);
+
+        std::move(byExpiration.begin(), end, std::back_inserter(items));
+        byExpiration.erase(byExpiration.begin(), end);
+        return nextExpiration();
+    }
+
+private:
+    ManagedSharedMemory* m_pSegment;
+    Set* timers_;
+    uint32_t* nextId_;
+};
+
+
 
 
 } // namespace  boostshm

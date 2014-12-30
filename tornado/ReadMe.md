@@ -8,7 +8,7 @@
 基于[tornado](https://github.com/tornadoweb/tornado) 实现的一个c++异步库(需要c++11才可以编译)
 （
 依赖库:
-boost_1_54_0
+boost_1_57_0
 gflags-2.1.1
 c-ares-1.10.0  (for DNS) 
 ）

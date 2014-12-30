@@ -1,5 +1,10 @@
 #include "comm.h"
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 namespace util
 {
 
@@ -270,6 +275,60 @@ int decode_base64url(std::string& dst, const std::string& src)
     return decode_base64_internal(dst, src.data(), src.length(), basis64);
 }
 
+int daemon()
+{
+    switch(::fork()) 
+    {
+    case -1:
+        std::cout << "fork() failed" << std::endl;
+        return -1;
+    case 0:
+        break;
+    default: //parent
+        ::exit(0);
+    }
+
+    //pid_t  pid = ::getpid();
+
+    if(::setsid() == -1)
+    {
+        std::cout << "setsid() failed" << std::endl;
+        return -2;
+    }
+    ::umask(0);
+    return 0;
+    /*
+    int  fd = open("/dev/null", O_RDWR);
+    if (fd == -1) {
+        ngx_log_error(NGX_LOG_EMERG, log, ngx_errno,
+                      "open(\"/dev/null\") failed");
+        return NGX_ERROR;
+    }
+
+    if (dup2(fd, STDIN_FILENO) == -1) {
+        ngx_log_error(NGX_LOG_EMERG, log, ngx_errno, "dup2(STDIN) failed");
+        return NGX_ERROR;
+    }
+
+    if (dup2(fd, STDOUT_FILENO) == -1) {
+        ngx_log_error(NGX_LOG_EMERG, log, ngx_errno, "dup2(STDOUT) failed");
+        return NGX_ERROR;
+    }
+
+#if 0
+    if (dup2(fd, STDERR_FILENO) == -1) {
+        ngx_log_error(NGX_LOG_EMERG, log, ngx_errno, "dup2(STDERR) failed");
+        return NGX_ERROR;
+    }
+#endif
+
+    if (fd > STDERR_FILENO) {
+        if (close(fd) == -1) {
+            ngx_log_error(NGX_LOG_EMERG, log, ngx_errno, "close() failed");
+            return NGX_ERROR;
+        }
+    }    return NGX_OK;*/
+}
 
 
 }//namespace comm

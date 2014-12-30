@@ -9,15 +9,16 @@
 #include <vector>
 #include "EPoll.h"
 #include "TimeoutQueue.h"
-
+#include "Util.h"
 
 namespace tornado
 {
 
+//单例，不可复制
 class IOLoop
 {
 public:
-    static const int   DEFAULT_MAX_FD = 10000 + 4;
+    static const int   DEFAULT_MAX_FD = 10000 + 4; //最大文件句柄数
     static const int   MIN_FD = 3; // 排除掉标准文件描述符0 1 2
     static const uint32_t  READ  = EPOLLIN;
     static const uint32_t  WRITE = EPOLLOUT;
@@ -39,6 +40,9 @@ public:
 
 private:
     IOLoop(int maxfd = DEFAULT_MAX_FD);
+    // noncopyable
+    IOLoop(const IOLoop&) = delete;
+    IOLoop& operator=(const IOLoop&) = delete;
 
 public: 
     ~IOLoop();
@@ -57,20 +61,35 @@ public:
    
     int removeHandler(int32_t fd);
 
-    //int32_t addSignalHandler(int signum = SIGTERM, HandlerCallback handler);
     int32_t addSignalHandler(int signum, HandlerCallback&& handler);
    
     int start();
     int stop();
 
-    TimerID  addTimeout(int delayMS, TimeCallback&& callback);
+    inline TimerID  addTimeout(int delayMS, TimeCallback&& callback)
+    {
+        return timeouts_.add(TimeUtil::curTimeMS(), delayMS, callback);
+    }
 
-    bool removeTimeout(TimerID  id);
+    inline bool removeTimeout(TimerID id)
+    {
+        return timeouts_.erase(id); 
+    }
 
-    void addCallback(Callback&& callback);
+    inline void addCallback(Callback&& callback)
+    {
+        callbacks_.push_back(std::move(callback));
+    }
 
-    inline int getHandlerNum()const {return handle_num_;}
-    bool idle() const { return callbacks_.empty() && timeouts_.empty() ;}
+    inline int getHandlerNum()const
+    {
+        return handle_num_;
+    }
+
+    inline bool idle() const 
+    { 
+        return callbacks_.empty() && timeouts_.empty();
+    }
       
 private:
     EPollImpl   impl_;

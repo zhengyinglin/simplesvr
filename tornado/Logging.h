@@ -4,20 +4,19 @@
  *author zhengyinglin (979762787@qq.com)
  *date 2014-10-27
 */
-#include "gflags/gflags.h"
-
 
 #ifndef _TORNADO_LOGGING_H_
 #define _TORNADO_LOGGING_H_
 
 
-
+#include "gflags/gflags.h"
 
 namespace tornado
 {
 
 int init_log(int argc, char* argv[]);
 
+//日志级别
 enum LOG_LEVEL
 {
     INFO  = 1,
@@ -66,6 +65,8 @@ private:
 };
 
 } // namespace tornado
+
+//几个日志宏
 
 #define TORNADO_LOG_INFO(szFormat, args...) \
         if(tornado::LogFileObject::instance().shouldWrite(tornado::INFO)) \

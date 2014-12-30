@@ -44,8 +44,6 @@ static CAresLibInit g_ObjCAresLib;
 
  
 
-//https://github.com/gevent/gevent/blob/master/gevent/ares.pyx
-
 Resolver::Resolver():
     channel_(nullptr),
     state_(0), 
@@ -68,7 +66,7 @@ Resolver::~Resolver()
 
 int Resolver::init(int flags/*=0*/, int tries/*=0*/, int ndots/*=0*/, int udp_port/*=0*/, int tcp_port/*=0*/)
 {
-    //初始lib
+    //初始lib  void*
     g_ObjCAresLib.init_lib();
 
     struct ares_options options;

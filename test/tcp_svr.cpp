@@ -16,7 +16,7 @@ namespace tornado
 class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
 public:
-    TcpConnection(IOStreamPtr& stream):
+    TcpConnection(IOStreamPtr stream):
         stream_(stream)
     {
         TORNADO_LOG_DEBUG_STR("--------->TcpConnection create stream");
@@ -79,7 +79,7 @@ typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 class MySvr : public TcpServer
 {
 protected:
-    virtual void handleStream(IOStreamPtr& stream)
+    virtual void handleStream(IOStreamPtr stream)
     {
         TORNADO_LOG_INFO_STR("handle_stream");
         TcpConnectionPtr ptr(new TcpConnection(stream));

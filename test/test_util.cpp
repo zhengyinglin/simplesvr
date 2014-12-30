@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <vector>
 #include <map>
+
 using namespace util::comm;
 
 std::string input ="'f;dfdfs@^^#^#^#&^#&^#&*@&*@234567890qwertyuiopasdfghjkl;'zxcvbnm,.v./v./cv;sd;";
@@ -58,7 +59,7 @@ void test_base64()
 }
 
 
-
+ 
 void test_json()
 {
     Json  json;
@@ -71,7 +72,8 @@ void test_json()
         std::cout << " ***  "<< vals[i] << std::endl;
     //<< json.getString("its.num8", "nothing") << std::endl;
     //json.paserFromFile("/home/ghostzheng/somelib/svr/test/build/test.json");
-
+  
+ 
 }
 
 void test_ini()
@@ -177,7 +179,7 @@ void test_scople_guard()
 }
 
 int main()
-{ 
+{ /*
     test_base64();
     test_hex();
     test_hex_2();
@@ -188,14 +190,14 @@ int main()
     else
     {
         std::cout << "----------------> check failed\n";
-    }
-/*
+    }*/
+
     test_json();
-    test_ini();
+ /*   test_ini();
     test_xml();
 
-    test_rand(); */
-    test_scople_guard();
+    test_rand();
+    test_scople_guard(); */
 
     return 0;
 }

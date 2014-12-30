@@ -7,8 +7,8 @@ if [ "$#" -lt 1 ] ; then
      echo "build clean :               sh  $0  clean"
      exit
 elif [ "$1" = "build"  ] ; then	
-	 #using clang building  g++ (GCC) 4.9.1  clang version 3.6.0 (trunk)
-	 source /data/qqpet/build_clang/usingclang.sh
+	 #using clang building  g++ (GCC) 4.9.1  clang version 3.5.0 (trunk)
+	 source /data/app/clang_with_gcc/using_clang.sh  
      mkdir -p build
      cd build
      cmake  ..

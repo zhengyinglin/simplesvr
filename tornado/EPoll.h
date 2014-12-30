@@ -15,19 +15,22 @@ namespace tornado
 
 class EPollImpl
 {
+    // noncopyable
+    EPollImpl(const EPollImpl&) = delete;
+    EPollImpl& operator=(const EPollImpl&) = delete;
 public:
-  EPollImpl(int events_num = 128);
-  virtual ~EPollImpl();
-
-  int registerFD(int32_t fd, uint32_t events);
-  int modifyFD(int32_t fd, uint32_t events);
-  int unregisterFD(int32_t fd);
-  int poll(int timeoutMs, struct epoll_event*  &events);
+    EPollImpl(int events_num = 128);
+    virtual ~EPollImpl();
+    
+    int registerFD(int32_t fd, uint32_t events);
+    int modifyFD(int32_t fd, uint32_t events);
+    int unregisterFD(int32_t fd);
+    int poll(int timeoutMs, struct epoll_event*  &events);
 
 private:
-  int                  epollfd_;
-  struct epoll_event*  events_;
-  int                  events_num_;
+    int                  epollfd_;
+    struct epoll_event*  events_;
+    int                  events_num_;
 };
 
 

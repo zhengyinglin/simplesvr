@@ -4,13 +4,13 @@ PROJECT(tornado)
 
 set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11 -O2")
 
-#remove boost sth warning for clang building
-set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")
+#remove boost sth warning for clang 3.6 building
+#set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")
 
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-SET(BOOST    /yourpath/boost/boost_1_54_0/)
+SET(BOOST    /yourpath/lib/boost_1_57_0/include)
 SET(GFLAGS   /yourpath/lib/google/gflags-2.1.1)
-SET(CARES   /yourpath/lib/c-ares)
+SET(CARES    /yourpath/lib/c-ares)
 
 AUX_SOURCE_DIRECTORY(. APP_SRC_FILES)
 

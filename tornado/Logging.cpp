@@ -1,6 +1,4 @@
 #include "Logging.h"
-
-
 #include <stdio.h>
 #include <string>
 #include <sys/stat.h>
@@ -13,7 +11,7 @@
 #include <stdarg.h>
 
 
-
+//日志选项  默认打印到屏幕
 DEFINE_int32(loglevel, tornado::DEBUG, "DEBUG"); 
 DEFINE_int32(logbufsecs, 10, "10 seconds");
 DEFINE_string(logfile, "", "logfile name");

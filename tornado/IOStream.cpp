@@ -119,7 +119,7 @@ bool IOStream::connect(const char* ip, short port)
     return true;
 }
 
-bool IOStream::connect(const char* ip, short port, ConnectCallback callback)
+bool IOStream::connect(const char* ip, short port, ConnectCallback&& callback)
 {
     if(!connect(ip, port))
         return false;

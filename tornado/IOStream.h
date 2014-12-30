@@ -11,7 +11,6 @@
 
 namespace tornado
 {
-class IOLoop;
 
 class IOStream : public std::enable_shared_from_this<IOStream>
 {
@@ -35,7 +34,7 @@ public:
     void close();
     
     bool connect(const char* ip, short port);
-    bool connect(const char* ip, short port, ConnectCallback callback);
+    bool connect(const char* ip, short port, ConnectCallback&& callback);
     
 
     void setCloseCallback(CloseCallback&& callback);

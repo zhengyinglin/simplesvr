@@ -110,8 +110,8 @@ void TcpServer::handleConnection(int32_t socket, uint32_t events)
         assert(fd >= IOLoop::MIN_FD );
 
         TORNADO_LOG_INFO("socket(%d) accept|fd=%d|addr=%s|%d", socket_, fd, inet_ntoa(addr.sin_addr), addr.sin_port);        
-        IOStreamPtr  stream(new IOStream(fd));
-        handleStream(stream);
+ 
+        handleStream( std::make_shared<IOStream>(fd) );
         break;
      }
 }

@@ -26,6 +26,9 @@ namespace tornado
 ///
 class Buffer
 {
+    // noncopyable
+    Buffer(const Buffer&) = delete;
+    Buffer& operator=(const Buffer&) = delete;
 public:
     Buffer(size_t buff_len = 1024 * 100);
     ~Buffer();

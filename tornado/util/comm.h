@@ -13,6 +13,7 @@
 #include <chrono>
 #include <iostream>
 
+
 namespace util
 {
 
@@ -58,6 +59,40 @@ public:
 private:
     std::chrono::steady_clock::time_point  tstart_;
 };
+
+
+// see  nginx-1.6.0/src/os/unix/ngx_daemon.c
+int daemon();
+//// see  nginx-1.6.0/src/os/unix/ngx_process.c
+//ngx_pid_t
+//ngx_execute(ngx_cycle_t *cycle, ngx_exec_ctx_t *ctx)
+//{
+//    return ngx_spawn_process(cycle, ngx_execute_proc, ctx, ctx->name,
+//                             NGX_PROCESS_DETACHED);
+//}
+//
+//typedef struct {
+//    char         *path;
+//    char         *name;
+//    char *const  *argv;
+//    char *const  *envp;
+//} ngx_exec_ctx_t;
+//
+//
+//static void
+//ngx_execute_proc(ngx_cycle_t *cycle, void *data)
+//{
+//    ngx_exec_ctx_t  *ctx = data;
+//    if (execve(ctx->path, ctx->argv, ctx->envp) == -1) {
+//        ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+//                      "execve() failed while executing %s \"%s\"",
+//                      ctx->name, ctx->path);
+//    }
+//    ::exit(1);
+//}
+
+
+
 
 }//namespace comm
 

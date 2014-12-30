@@ -114,6 +114,77 @@ void test_map()
     }
 }
 
+void test_map2()
+{
+    typedef ShmMap<int, int>  Intmap;
+    const char* MyMemName ="MySharedMemory_MAP_INT";
+
+    ShmRemove  remove(MyMemName);
+    Intmap  shmmap(MyMemName, 1024 * 100);
+    Intmap::Map*  pMap = shmmap.get_map();
+    for (int i = 0; i< 10 ; ++i)
+    {
+        (*pMap)[i] = i * 100;
+    }
+
+    //get
+    {
+        Intmap  shmmap(MyMemName, 1024 * 100);
+        Intmap::Map*  pMap = shmmap.get_map();
+        for(auto& item : *pMap )
+        {
+            std::cout << item.first << "  " <<item.second << std::endl;
+        } 
+    }
+}
+
+
+//1字节 可以少内存
+#pragma pack(push, 1)
+struct STMapValue
+{
+public:
+    STMapValue(int aa=0, short bb=0, long cc=0):
+        a(aa), b(bb), c(cc)
+    {
+    }
+    std::string value()
+    {
+        char buff[1024]={0};
+        snprintf(buff, sizeof(buff), "a=%d, b=%d, c=%lu", a, b, c);
+        return buff;
+    }
+    int a;
+    short b;
+    long  c;
+};
+#pragma pack(pop)
+
+void test_map3()
+{
+    typedef ShmMap<int, STMapValue>  Structmap;
+    const char* MyMemName ="MySharedMemory_MAP_STRUCT";
+
+    ShmRemove  remove(MyMemName);
+    Structmap  shmmap(MyMemName, 1024 * 100);
+    Structmap::Map*  pMap = shmmap.get_map();
+    for (int i = 0; i< 10 ; ++i)
+    {
+        STMapValue val(i, i, i);
+        (*pMap)[i] = val;
+    }
+
+    //get
+    {
+        Structmap  shmmap(MyMemName, 1024 * 100);
+        Structmap::Map*  pMap = shmmap.get_map();
+        for(auto& item : *pMap )
+        {
+            std::cout << item.first << "  " << item.second.value() << std::endl;
+        } 
+    }
+}
+
 void test_multimap()
 {  
     typedef boostshm::ShmMultiMap<int, time_t> Mymap;
@@ -193,12 +264,41 @@ void test_mq()
     }
 }
 
+void test_timerqueue()
+{
+    const char* MyMemName ="Test_TimerQueue";
+    const int size = 1024*100;
+    //ShmRemove  remove(MyMemName);
+    {
+        TimerQueue q(MyMemName, size);
+        std::cout << q.erase(0) << std::endl;
+        std::cout << q.erase(6) << std::endl;
+    }
+    uint32_t id = 0;
+    {
+         TimerQueue q(MyMemName, size);
+         id = q.add(1000000);
+         std::cout << id << std::endl;
+    }
+
+    {
+         TimerQueue q(MyMemName, size);
+         std::cout << q.erase(id) << std::endl;
+    }
+}
+
+
+
+
 int main()
 { 
-    test_vector();
+    /*test_vector();
     test_set();
     test_map();
+    test_map2();
+    test_map3();
     test_multimap();
-    test_mq();
+    test_mq();*/
+    test_timerqueue();
     return 0;
 }

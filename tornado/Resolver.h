@@ -10,15 +10,6 @@
 #include "IOLoop.h"
 #include "ares.h" //c-ares
 
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <netdb.h>
-#include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>*/
-
 
 namespace tornado
 {

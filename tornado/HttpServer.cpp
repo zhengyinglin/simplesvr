@@ -140,8 +140,6 @@ void HTTPHeaders::print() const
         printf("cookies\t\t[%s]:[%s]\n", item.first.c_str(), item.second.c_str());
     }
 }
- 
-
 
 //===================  HTTPConnection =========================
 HTTPConnection::HTTPConnection(IOStreamPtr& stream, HttpRequestCallback& request_callback):
@@ -332,7 +330,6 @@ int HTTPConnection::parseQsBytes(const std::string& qs, std::map<std::string, st
     return 0;
 }
 
-
 //"""Finishes the request."""
 void HTTPConnection::finish()
 {
@@ -344,6 +341,7 @@ void HTTPConnection::finish()
        stream_->close();
     }
 }
+
 int64_t  HTTPConnection::getRequestTimeMS() const 
 {
     if(finish_time_)
@@ -363,8 +361,6 @@ int HTTPConnection::writeToBuff(const char* chunk, size_t len)
     return stream_->justWriteBytesToBuff(chunk, len);
 }
 
-
-
 void HTTPConnection::onWriteComplete()
 {
     if(request_finished_ && !stream_->writing() && !stream_->closed() )
@@ -381,12 +377,12 @@ void HTTPConnection::onWriteComplete()
 //===================  HTTPServer =========================
 HTTPServer::HTTPServer(HttpRequestCallback&& callback):
     TcpServer(),
-    callback_(callback)
+    callback_(std::move(callback))
 {
 }
 
 
-void HTTPServer::handleStream(IOStreamPtr& stream)
+void HTTPServer::handleStream(IOStreamPtr stream)
 {
     const int32_t fd = stream->getFd();
     TORNADO_LOG_DEBUG("fd=%d", fd);

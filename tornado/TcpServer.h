@@ -15,8 +15,12 @@ namespace tornado
 {
 class IOLoop;
 
+//不可复制
 class TcpServer
 {
+    // noncopyable
+    TcpServer(const TcpServer&) = delete;
+    TcpServer& operator=(const TcpServer&) = delete;
 public:
     TcpServer();
     virtual ~TcpServer();
@@ -29,7 +33,7 @@ protected:
     void handleConnection(int32_t socket, uint32_t events);
 
     //虚函数--子类重载
-    virtual void handleStream(IOStreamPtr& stream) = 0;
+    virtual void handleStream(IOStreamPtr stream) = 0;
 
 protected:
     int32_t  socket_;

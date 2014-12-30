@@ -20,7 +20,6 @@ namespace tornado
 class HTTPHeaders
 {
 public:
-    
     int parse(const std::string& headers, size_t pos);
     int parseLine(const char* line, size_t len);
     int parseCookies();
@@ -87,26 +86,25 @@ public:
    virtual ~HTTPConnection();
 
    void startRun();
+   void finish();
+   int writeToBuff(const char* chunk, size_t len);
+   int write(const std::string& chunk);
+   int64_t getRequestTimeMS() const ;
+
 private:
    void onStreamColse();
    void onHeaders(const std::string& data);
    void onRequestBody(const std::string& data);
-
-public:
-   void finish();
-   int writeToBuff(const char* chunk, size_t len);
-   int write(const std::string& chunk);
-private:
    void onWriteComplete();
-
 
    int parseHttpRequest(const std::string& data);
    int parseBodyArguments(const std::string& body);
    int parseQsBytes(const std::string& qs, std::map<std::string, std::string>& arguments);
+
 public:
-   const HTTPRequest& getRequset() const { return request_; }
-   void  setCloseCallback(IOLoop::Callback&& callback) { close_callback_ = callback; }
-   int64_t  getRequestTimeMS() const ;
+   inline const HTTPRequest& getRequset() const { return request_; }
+   inline void setCloseCallback(IOLoop::Callback&& callback) { close_callback_ = std::move(callback); }
+
 
 private:
     HTTPRequest  request_;
@@ -122,14 +120,16 @@ private:
 
 class HTTPServer : public TcpServer
 {
+    // noncopyable
+    HTTPServer(const HTTPServer&) = delete;
+    HTTPServer& operator=(const HTTPServer&) = delete;
 public:
     HTTPServer(HttpRequestCallback&& callback);
-    virtual ~HTTPServer()
-    {}
+    virtual ~HTTPServer() {}
 
 protected:
     //虚函数--子类重载
-    virtual void handleStream(IOStreamPtr& stream);
+    virtual void handleStream(IOStreamPtr stream) override;
 private:
     HttpRequestCallback  callback_;
 };
