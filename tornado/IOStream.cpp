@@ -568,6 +568,8 @@ int IOStream::readToBuffer()
     
     if(bytesize < 0)
     {
+        if(erron == 0)
+            return 0;
         if(ERRNO_WOULDBLOCK)
             return 0;
         TORNADO_LOG_WARN("read bytesize  %d  < 0 strerron:%s", bytesize, STR_ERRNO);
